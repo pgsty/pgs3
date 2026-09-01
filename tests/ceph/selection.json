@@ -1,0 +1,485 @@
+{
+  "schema": "pgs3.ceph-s3-tests.selection.v2",
+  "upstream": {
+    "repository": "https://github.com/ceph/s3-tests.git",
+    "commit": "5522d1c351f75bc00ae0f64f742f3f095f5939d9",
+    "test_file": "s3tests/functional/test_s3.py"
+  },
+  "gates": {
+    "minimum_selected": 195,
+    "minimum_executed": 150,
+    "minimum_passed": 150,
+    "allow_failures": false,
+    "allow_errors": false,
+    "allow_skips": false,
+    "allow_not_run": false
+  },
+  "categories": {
+    "bucket_listing_v1_v2": {
+      "requirement": "ListObjects V1/V2 ordering, pagination, prefix, delimiter, encoding and MaxKeys semantics",
+      "nodeids": [
+        "s3tests/functional/test_s3.py::test_bucket_list_empty",
+        "s3tests/functional/test_s3.py::test_bucket_list_distinct",
+        "s3tests/functional/test_s3.py::test_bucket_list_many",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_many",
+        "s3tests/functional/test_s3.py::test_basic_key_count",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_basic",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_basic",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_encoding_basic",
+        "s3tests/functional/test_s3.py::test_bucket_list_encoding_basic",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_prefix",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_prefix",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_prefix_ends_with_delimiter",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_prefix_ends_with_delimiter",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_alt",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_alt",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_prefix_underscore",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_prefix_underscore",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_percentage",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_percentage",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_whitespace",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_whitespace",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_dot",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_dot",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_unreadable",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_unreadable",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_empty",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_empty",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_none",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_none",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_not_exist",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_delimiter_not_exist",
+        "s3tests/functional/test_s3.py::test_bucket_list_delimiter_not_skip_special",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_basic",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_basic",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_alt",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_alt",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_empty",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_empty",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_none",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_none",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_not_exist",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_not_exist",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_unreadable",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_unreadable",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_delimiter_basic",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_delimiter_basic",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_delimiter_alt",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_delimiter_alt",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_delimiter_prefix_not_exist",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_delimiter_prefix_not_exist",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_delimiter_delimiter_not_exist",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_delimiter_delimiter_not_exist",
+        "s3tests/functional/test_s3.py::test_bucket_list_prefix_delimiter_prefix_delimiter_not_exist",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_prefix_delimiter_prefix_delimiter_not_exist",
+        "s3tests/functional/test_s3.py::test_bucket_list_maxkeys_one",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_maxkeys_one",
+        "s3tests/functional/test_s3.py::test_bucket_list_maxkeys_zero",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_maxkeys_zero",
+        "s3tests/functional/test_s3.py::test_bucket_list_maxkeys_none",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_maxkeys_none",
+        "s3tests/functional/test_s3.py::test_bucket_list_maxkeys_invalid",
+        "s3tests/functional/test_s3.py::test_bucket_list_marker_none",
+        "s3tests/functional/test_s3.py::test_bucket_list_marker_empty",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_continuationtoken_empty",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_continuationtoken",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_both_continuationtoken_startafter",
+        "s3tests/functional/test_s3.py::test_bucket_list_marker_unreadable",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_startafter_unreadable",
+        "s3tests/functional/test_s3.py::test_bucket_list_marker_not_in_list",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_startafter_not_in_list",
+        "s3tests/functional/test_s3.py::test_bucket_list_marker_after_list",
+        "s3tests/functional/test_s3.py::test_bucket_listv2_startafter_after_list",
+        "s3tests/functional/test_s3.py::test_bucket_notexist",
+        "s3tests/functional/test_s3.py::test_bucketv2_notexist",
+        "s3tests/functional/test_s3.py::test_bucket_list_special_prefix"
+      ]
+    },
+    "bucket_basics_and_auth": {
+      "requirement": "bucket create/delete/head/location/naming/list-buckets and SigV4 rejection semantics",
+      "nodeids": [
+        "s3tests/functional/test_s3.py::test_bucket_delete_notexist",
+        "s3tests/functional/test_s3.py::test_bucket_delete_nonempty",
+        "s3tests/functional/test_s3.py::test_object_write_to_nonexist_bucket",
+        "s3tests/functional/test_s3.py::test_bucket_create_delete",
+        "s3tests/functional/test_s3.py::test_object_read_not_exist",
+        "s3tests/functional/test_s3.py::test_object_requestid_matches_header_on_error",
+        "s3tests/functional/test_s3.py::test_bucket_head",
+        "s3tests/functional/test_s3.py::test_bucket_head_notexist",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_bad_starts_nonalpha",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_bad_short_one",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_bad_short_two",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_good_long_60",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_good_long_61",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_good_long_62",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_good_long_63",
+        "s3tests/functional/test_s3.py::test_bucket_list_long_name",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_bad_ip",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_dns_underscore",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_dns_long",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_dns_dash_at_end",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_dns_dot_dot",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_dns_dot_dash",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_dns_dash_dot",
+        "s3tests/functional/test_s3.py::test_bucket_create_exists",
+        "s3tests/functional/test_s3.py::test_bucket_create_exists_nonowner",
+        "s3tests/functional/test_s3.py::test_buckets_create_then_list",
+        "s3tests/functional/test_s3.py::test_buckets_list_ctime",
+        "s3tests/functional/test_s3.py::test_list_buckets_invalid_auth",
+        "s3tests/functional/test_s3.py::test_list_buckets_bad_auth",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_good_starts_alpha",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_good_starts_digit",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_good_contains_period",
+        "s3tests/functional/test_s3.py::test_bucket_create_naming_good_contains_hyphen",
+        "s3tests/functional/test_s3.py::test_bucket_recreate_not_overriding"
+      ]
+    },
+    "object_data_metadata_conditions": {
+      "requirement": "Put/Get/Head/Delete data, metadata, ETags, payload framing, conditional requests and presigned expiry",
+      "nodeids": [
+        "s3tests/functional/test_s3.py::test_object_write_with_chunked_transfer_encoding",
+        "s3tests/functional/test_s3.py::test_object_head_zero_bytes",
+        "s3tests/functional/test_s3.py::test_object_write_check_etag",
+        "s3tests/functional/test_s3.py::test_object_write_cache_control",
+        "s3tests/functional/test_s3.py::test_object_write_expires",
+        "s3tests/functional/test_s3.py::test_object_write_read_update_read_delete",
+        "s3tests/functional/test_s3.py::test_object_set_get_metadata_none_to_good",
+        "s3tests/functional/test_s3.py::test_object_set_get_metadata_none_to_empty",
+        "s3tests/functional/test_s3.py::test_object_set_get_metadata_overwrite_to_empty",
+        "s3tests/functional/test_s3.py::test_object_metadata_replaced_on_put",
+        "s3tests/functional/test_s3.py::test_object_write_file",
+        "s3tests/functional/test_s3.py::test_get_object_ifmatch_good",
+        "s3tests/functional/test_s3.py::test_get_object_ifmatch_failed",
+        "s3tests/functional/test_s3.py::test_get_object_ifnonematch_good",
+        "s3tests/functional/test_s3.py::test_get_object_ifnonematch_failed",
+        "s3tests/functional/test_s3.py::test_get_object_ifmodifiedsince_good",
+        "s3tests/functional/test_s3.py::test_get_object_ifmodifiedsince_failed",
+        "s3tests/functional/test_s3.py::test_get_object_ifunmodifiedsince_good",
+        "s3tests/functional/test_s3.py::test_get_object_ifunmodifiedsince_failed",
+        "s3tests/functional/test_s3.py::test_put_object_ifmatch_good",
+        "s3tests/functional/test_s3.py::test_put_object_ifmatch_failed",
+        "s3tests/functional/test_s3.py::test_put_object_ifnonmatch_nonexisted_good",
+        "s3tests/functional/test_s3.py::test_put_object_ifnonmatch_overwrite_existed_failed",
+        "s3tests/functional/test_s3.py::test_object_content_encoding_aws_chunked",
+        "s3tests/functional/test_s3.py::test_object_anon_put",
+        "s3tests/functional/test_s3.py::test_object_put_authenticated",
+        "s3tests/functional/test_s3.py::test_object_raw_put_authenticated_expired"
+      ]
+    },
+    "multi_delete": {
+      "requirement": "DeleteObjects ordered batch behavior, idempotency, limits and explicit version deletion",
+      "nodeids": [
+        "s3tests/functional/test_s3.py::test_versioning_concurrent_multi_object_delete",
+        "s3tests/functional/test_s3.py::test_multi_object_delete",
+        "s3tests/functional/test_s3.py::test_multi_objectv2_delete",
+        "s3tests/functional/test_s3.py::test_multi_object_delete_key_limit",
+        "s3tests/functional/test_s3.py::test_multi_objectv2_delete_key_limit",
+        "s3tests/functional/test_s3.py::test_versioning_multi_object_delete",
+        "s3tests/functional/test_s3.py::test_versioning_multi_object_delete_with_marker",
+        "s3tests/functional/test_s3.py::test_versioning_multi_object_delete_with_marker_create"
+      ]
+    },
+    "copy_object": {
+      "requirement": "CopyObject metadata, cross-bucket, errors, self-copy, version source and copy preconditions",
+      "nodeids": [
+        "s3tests/functional/test_s3.py::test_object_copy_zero_size",
+        "s3tests/functional/test_s3.py::test_object_copy_16m",
+        "s3tests/functional/test_s3.py::test_object_copy_same_bucket",
+        "s3tests/functional/test_s3.py::test_object_copy_verify_contenttype",
+        "s3tests/functional/test_s3.py::test_object_copy_to_itself",
+        "s3tests/functional/test_s3.py::test_object_copy_to_itself_with_metadata",
+        "s3tests/functional/test_s3.py::test_object_copy_diff_bucket",
+        "s3tests/functional/test_s3.py::test_object_copy_retaining_metadata",
+        "s3tests/functional/test_s3.py::test_object_copy_replacing_metadata",
+        "s3tests/functional/test_s3.py::test_object_copy_bucket_not_found",
+        "s3tests/functional/test_s3.py::test_object_copy_key_not_found",
+        "s3tests/functional/test_s3.py::test_object_copy_versioned_bucket",
+        "s3tests/functional/test_s3.py::test_object_copy_versioned_url_encoding",
+        "s3tests/functional/test_s3.py::test_object_copy_versioning_multipart_upload",
+        "s3tests/functional/test_s3.py::test_copy_object_ifmatch_good",
+        "s3tests/functional/test_s3.py::test_copy_object_ifmatch_failed",
+        "s3tests/functional/test_s3.py::test_copy_object_ifnonematch_good",
+        "s3tests/functional/test_s3.py::test_copy_object_ifnonematch_failed"
+      ]
+    },
+    "multipart": {
+      "requirement": "multipart create/upload/list/complete/abort, replacement, validation and part-size semantics",
+      "nodeids": [
+        "s3tests/functional/test_s3.py::test_multipart_upload_empty",
+        "s3tests/functional/test_s3.py::test_multipart_upload_complete_without_create",
+        "s3tests/functional/test_s3.py::test_multipart_upload_resend_part",
+        "s3tests/functional/test_s3.py::test_multipart_upload_multiple_sizes",
+        "s3tests/functional/test_s3.py::test_multipart_upload_size_too_small",
+        "s3tests/functional/test_s3.py::test_multipart_upload_contents",
+        "s3tests/functional/test_s3.py::test_multipart_upload_overwrite_existing_object",
+        "s3tests/functional/test_s3.py::test_abort_multipart_upload",
+        "s3tests/functional/test_s3.py::test_abort_multipart_upload_not_found",
+        "s3tests/functional/test_s3.py::test_multipart_upload_missing_part",
+        "s3tests/functional/test_s3.py::test_multipart_upload_incorrect_etag",
+        "s3tests/functional/test_s3.py::test_atomic_multipart_upload_write"
+      ]
+    },
+    "range_and_expect_continue": {
+      "requirement": "single byte ranges, invalid ranges, empty objects, large ranges and Expect: 100-continue",
+      "nodeids": [
+        "s3tests/functional/test_s3.py::test_100_continue_error_retry",
+        "s3tests/functional/test_s3.py::test_ranged_request_response_code",
+        "s3tests/functional/test_s3.py::test_ranged_big_request_response_code",
+        "s3tests/functional/test_s3.py::test_ranged_request_skip_leading_bytes_response_code",
+        "s3tests/functional/test_s3.py::test_ranged_request_return_trailing_bytes_response_code",
+        "s3tests/functional/test_s3.py::test_ranged_request_invalid_range",
+        "s3tests/functional/test_s3.py::test_ranged_request_empty_object"
+      ]
+    },
+    "versioning": {
+      "requirement": "always-enabled version creation/read/delete, markers, pagination, copy and races",
+      "nodeids": [
+        "s3tests/functional/test_s3.py::test_versioning_obj_create_read_remove",
+        "s3tests/functional/test_s3.py::test_versioning_obj_create_read_remove_head",
+        "s3tests/functional/test_s3.py::test_versioning_stack_delete_merkers",
+        "s3tests/functional/test_s3.py::test_versioning_obj_create_versions_remove_all",
+        "s3tests/functional/test_s3.py::test_versioning_obj_create_versions_remove_special_names",
+        "s3tests/functional/test_s3.py::test_versioning_obj_create_overwrite_multipart",
+        "s3tests/functional/test_s3.py::test_versioning_obj_list_marker",
+        "s3tests/functional/test_s3.py::test_versioning_copy_obj_version",
+        "s3tests/functional/test_s3.py::test_versioned_concurrent_object_create_concurrent_remove",
+        "s3tests/functional/test_s3.py::test_versioned_concurrent_object_create_and_remove",
+        "s3tests/functional/test_s3.py::test_delete_marker_versioned"
+      ]
+    },
+    "checksums": {
+      "requirement": "client-supplied SHA256/CRC64NVME and multipart checksum/ETag validation",
+      "nodeids": [
+        "s3tests/functional/test_s3.py::test_object_checksum_sha256",
+        "s3tests/functional/test_s3.py::test_object_checksum_crc64nvme",
+        "s3tests/functional/test_s3.py::test_multipart_checksum_sha256"
+      ]
+    }
+  },
+  "candidate_audit": {
+    "policy": "The 209-case first-run candidate set is fixed. A case may be excluded only when the pinned upstream source demonstrates an API outside Phase 1 or an assertion that conflicts with an explicit pgs3 invariant. A failure, error, fails_on_aws marker, or fails_on_dbstore marker alone is never an exclusion reason.",
+    "candidate_count": 209,
+    "selected_count": 195,
+    "excluded_count": 14,
+    "minimum_in_scope_core": 150,
+    "first_run": {
+      "artifact": "artifacts/acceptance/20260831T010440Z-ceph-s3-tests-pg17-94443/ceph/results.json",
+      "candidate_counts": {
+        "passed": 133,
+        "failed": 39,
+        "errors": 37,
+        "skipped": 0,
+        "not_run": 0
+      },
+      "excluded_status_counts": {
+        "passed": 0,
+        "failed": 10,
+        "errors": 4,
+        "skipped": 0,
+        "not_run": 0
+      },
+      "retained_counts": {
+        "passed": 133,
+        "failed": 29,
+        "errors": 33,
+        "skipped": 0,
+        "not_run": 0
+      }
+    }
+  },
+  "excluded_cases": {
+    "s3tests/functional/test_s3.py::test_bucket_list_unordered": {
+      "class": "ceph_allow_unordered",
+      "reason": "Ceph's allow-unordered=true query extension is not an AWS S3 or Phase-1 parameter; pgs3 deliberately preserves ordered V1/V2 listing semantics.",
+      "first_run_status": "FAIL",
+      "decorators": [
+        "pytest.mark.fails_on_aws",
+        "pytest.mark.fails_on_dbstore"
+      ],
+      "source_contains": [
+        "allow-unordered=true",
+        "before-call.s3.ListObjects"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_bucket_listv2_unordered": {
+      "class": "ceph_allow_unordered",
+      "reason": "Ceph's allow-unordered=true query extension is not an AWS S3 or Phase-1 parameter; pgs3 deliberately preserves ordered V1/V2 listing semantics.",
+      "first_run_status": "FAIL",
+      "decorators": [
+        "pytest.mark.fails_on_aws",
+        "pytest.mark.list_objects_v2",
+        "pytest.mark.fails_on_dbstore"
+      ],
+      "source_contains": [
+        "allow-unordered=true",
+        "before-call.s3.ListObjects"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_bucket_list_return_data": {
+      "class": "acl_and_public_access",
+      "reason": "The test derives expected LIST Owner fields by calling GetObjectAcl, an API explicitly outside Phase 1; LIST data itself remains covered by the other selected V1/V2 cases.",
+      "first_run_status": "FAIL",
+      "decorators": [
+        "pytest.mark.fails_on_dbstore"
+      ],
+      "source_contains": [
+        "get_object_acl",
+        "acl_response['Owner']"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_bucket_list_return_data_versioning": {
+      "class": "acl_and_public_access",
+      "reason": "The test derives expected version-list Owner fields by calling GetObjectAcl, an API explicitly outside Phase 1; version data remains covered by selected always-enabled version tests.",
+      "first_run_status": "FAIL",
+      "decorators": [
+        "pytest.mark.fails_on_dbstore"
+      ],
+      "source_contains": [
+        "get_object_acl",
+        "acl_response['Owner']"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_put_object_ifmatch_overwrite_existed_good": {
+      "class": "non_aws_put_condition_variants",
+      "reason": "The explicit Phase-1 write contract requires If-Match:<etag>, not wildcard If-Match:*; the pinned test is marked fails_on_aws and exercises that extra variant.",
+      "first_run_status": "FAIL",
+      "decorators": [
+        "pytest.mark.fails_on_aws"
+      ],
+      "source_contains": [
+        "{'If-Match': '*'}"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_put_object_ifmatch_nonexisted_failed": {
+      "class": "non_aws_put_condition_variants",
+      "reason": "The explicit Phase-1 write contract requires If-Match:<etag>, not wildcard If-Match:* or this Ceph-specific missing-key 404 assertion; selected exact-ETag success/failure cases remain strict.",
+      "first_run_status": "FAIL",
+      "decorators": [
+        "pytest.mark.fails_on_aws",
+        "pytest.mark.fails_on_dbstore"
+      ],
+      "source_contains": [
+        "{'If-Match': '*'}",
+        "assert status == 404"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_put_object_ifnonmatch_good": {
+      "class": "non_aws_put_condition_variants",
+      "reason": "The explicit Phase-1 atomic create contract requires If-None-Match:*, not an arbitrary nonmatching entity tag; the pinned test is marked fails_on_aws.",
+      "first_run_status": "FAIL",
+      "decorators": [
+        "pytest.mark.fails_on_aws"
+      ],
+      "source_contains": [
+        "{'If-None-Match': 'ABCORZ'}"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_put_object_ifnonmatch_failed": {
+      "class": "non_aws_put_condition_variants",
+      "reason": "The explicit Phase-1 atomic create contract requires If-None-Match:*, not If-None-Match:<etag>; selected wildcard success/failure cases remain strict.",
+      "first_run_status": "FAIL",
+      "decorators": [
+        "pytest.mark.fails_on_aws",
+        "pytest.mark.fails_on_dbstore"
+      ],
+      "source_contains": [
+        "{'If-None-Match': etag}"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_object_copy_not_owned_bucket": {
+      "class": "tenant_non_disclosure_conflict",
+      "reason": "The test requires cross-tenant CopyObject to reveal an inaccessible source as HTTP 403; pgs3 intentionally returns invisible-as-missing 404 so Copy cannot become a tenant existence oracle.",
+      "first_run_status": "FAIL",
+      "decorators": [
+        "pytest.mark.copy"
+      ],
+      "source_contains": [
+        "get_alt_client()",
+        "assert status == 403"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_bucket_get_location": {
+      "class": "us_east_1_location_null",
+      "reason": "The pinned fixture sets api_name to the literal us-east-1 and this function only normalizes an empty fixture value; AWS and pgs3 intentionally return an empty LocationConstraint, which botocore parses as null.",
+      "first_run_status": "FAIL",
+      "decorators": [
+        "pytest.mark.fails_on_dbstore"
+      ],
+      "source_contains": [
+        "CreateBucketConfiguration={'LocationConstraint': location_constraint}",
+        "if location_constraint == \"\"",
+        "assert response['LocationConstraint'] == location_constraint"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_multipart_upload_small": {
+      "class": "consumed_upload_completion_retry",
+      "reason": "The object is already complete and readable before the function's explicitly extra CompleteMultipartUpload call; requiring that consumed upload ID to succeed again is outside the Phase-1 and AWS contract.",
+      "first_run_status": "ERROR",
+      "decorators": [
+        "pytest.mark.fails_on_dbstore"
+      ],
+      "source_contains": [
+        "response = client.get_object(Bucket=bucket_name, Key=key1)",
+        "# check extra client.complete_multipart_upload"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_multipart_upload": {
+      "class": "consumed_upload_completion_retry",
+      "reason": "The function immediately repeats a successful CompleteMultipartUpload using the consumed upload ID; AWS permits NoSuchUpload after completion and Phase 1 does not retain completion receipts.",
+      "first_run_status": "ERROR",
+      "decorators": [
+        "pytest.mark.fails_on_dbstore"
+      ],
+      "source_contains": [
+        "# check extra client.complete_multipart_upload",
+        "client.complete_multipart_upload(Bucket=bucket_name, Key=key, UploadId=upload_id"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_multipart_resend_first_finishes_last": {
+      "class": "duplicate_complete_part_numbers",
+      "reason": "The interleaved resend appends both bodies as PartNumber 1 and sends both entries to CompleteMultipartUpload; pgs3 deliberately requires a strictly increasing, duplicate-free completion list.",
+      "first_run_status": "ERROR",
+      "decorators": [],
+      "source_contains": [
+        "Body=fp_b, PartNumber=1",
+        "PartNumber=1, Body=fp_a",
+        "MultipartUpload={'Parts': parts}"
+      ]
+    },
+    "s3tests/functional/test_s3.py::test_multipart_reupload_checksum_and_etag": {
+      "class": "consumed_upload_completion_retry",
+      "reason": "The function first validates the completed ETag and composite checksum, then requires an explicitly idempotent retry on the consumed upload ID; AWS permits NoSuchUpload after completion and Phase 1 does not promise this extension.",
+      "first_run_status": "ERROR",
+      "decorators": [
+        "pytest.mark.checksum",
+        "pytest.mark.fails_on_dbstore"
+      ],
+      "source_contains": [
+        "idempotent) attempt to retry completion",
+        "assert res1['ETag'] == res2['ETag']",
+        "assert res1['ChecksumSHA256'] == res2['ChecksumSHA256']"
+      ]
+    }
+  },
+  "adapters": {
+    "always_enabled_versioning": "The pinned Ceph tests call PutBucketVersioning(Enabled) before versioned cases, while the pgs3 Phase 1 contract has versioning enabled permanently and does not expose PutBucketVersioning. The pytest adapter turns only Status=Enabled (with optional MFADelete=Disabled) into a local success response. Suspended and every other request still reach the endpoint and fail normally.",
+    "pure_python_negative_expiry_signer": "The pinned awscrt rejects ExpiresIn=-1000 with a client-side assertion before the selected expiry test can contact pgs3. The suite sets BOTO_DISABLE_CRT=true so botocore's pinned pure-Python SigV4 signer preserves X-Amz-Expires=-1000 and the endpoint must reject it; explicit precomputed CRC64NVME coverage remains selected."
+  },
+  "excluded_classes": {
+    "acl_and_public_access": "Phase 1 authorizes mapped PostgreSQL roles through RLS and does not implement S3 ACL grants or anonymous-public ACL behavior.",
+    "bucket_policy_and_iam": "Bucket policy, IAM, ownership controls and public-access-block APIs are not Phase 1 APIs; RLS isolation is exercised separately and by cross-tenant copy cases.",
+    "lifecycle_and_restore": "Lifecycle configuration, transition, expiration and restore are outside the synchronous Phase 1 API; database GC has a separate acceptance suite.",
+    "website_cors_post": "Static website hosting, CORS configuration and browser POST policy uploads are not Phase 1 routes.",
+    "sse_and_object_lock": "SSE-C, SSE-S3, KMS and Object Lock are explicitly outside Phase 1.",
+    "sts_sns_s3control_select_logging": "STS, SNS notifications, S3 Control, S3 Select and Ceph bucket logging are separate services/extensions, not Phase 1 S3 data-plane APIs.",
+    "tagging_torrent_attributes": "Tagging, torrents, GetObjectAttributes, GetObject PartNumber and UploadPartCopy are not included in the Phase 1 route set.",
+    "versioning_suspension": "pgs3 versioning is always enabled; non-versioned, suspended and null-version transition cases conflict with the specified storage model.",
+    "sigv2": "The endpoint intentionally implements AWS Signature Version 4 only; SigV2-only tests are excluded while SigV4 header/query coverage remains mandatory.",
+    "ceph_allow_unordered": "The Ceph-only allow-unordered query extension conflicts with Phase-1 ordered V1/V2 list behavior.",
+    "non_aws_put_condition_variants": "Phase 1 requires atomic If-None-Match:* and If-Match:<etag>; wildcard If-Match and arbitrary-tag If-None-Match variants marked fails_on_aws are outside that contract.",
+    "tenant_non_disclosure_conflict": "Cross-tenant source existence is intentionally hidden as missing, including CopyObject; tests requiring a revealing 403 conflict with this security invariant.",
+    "us_east_1_location_null": "AWS GetBucketLocation represents us-east-1 with an empty LocationConstraint; the pinned fixture supplies the literal region name and therefore expects a non-wire-compatible string.",
+    "consumed_upload_completion_retry": "Phase 1 consumes an upload ID after successful CompleteMultipartUpload; AWS documents NoSuchUpload for IDs that were already completed, so repeated-success completion is an extension rather than a core requirement.",
+    "duplicate_complete_part_numbers": "Phase 1 requires the CompleteMultipartUpload part list to be strictly increasing; the pinned race case submits two entries with the same PartNumber and conflicts with that validation contract."
+  }
+}

@@ -1,0 +1,6 @@
+comment = 'pgs3: an S3-compatible endpoint implemented inside PostgreSQL'
+default_version = '@CARGO_VERSION@'
+module_pathname = 'pgs3'
+relocatable = false
+superuser = true
+trusted = false

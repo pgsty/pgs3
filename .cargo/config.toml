@@ -1,0 +1,4 @@
+[target.'cfg(target_os="macos")']
+# PostgreSQL symbols are supplied by the server when the extension is loaded.
+rustflags = ["-Clink-arg=-Wl,-undefined,dynamic_lookup"]
+

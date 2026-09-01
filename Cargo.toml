@@ -1,0 +1,40 @@
+[package]
+name = "pgs3"
+version = "0.1.1"
+edition = "2024"
+resolver = "3"
+description = "An S3-compatible endpoint implemented as a PostgreSQL extension"
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+default = ["pg17"]
+pg16 = ["pgrx/pg16", "pgrx-tests/pg16"]
+pg17 = ["pgrx/pg17", "pgrx-tests/pg17"]
+pg18 = ["pgrx/pg18", "pgrx-tests/pg18"]
+pg_test = []
+
+[dependencies]
+base64 = "=0.22.1"
+crc = "=3.4.0"
+crc32fast = "=1.5.0"
+hmac = "=0.12.1"
+httpdate = "=1.0.3"
+md-5 = "=0.10.6"
+pgrx = "=0.19.2"
+quick-xml = "=0.38.3"
+sha1 = "=0.10.6"
+sha2 = { version = "=0.10.9", features = ["asm"] }
+
+[dev-dependencies]
+pgrx-tests = "=0.19.2"
+
+[profile.dev]
+panic = "unwind"
+
+[profile.release]
+panic = "unwind"
+opt-level = 3
+lto = "fat"
+codegen-units = 1

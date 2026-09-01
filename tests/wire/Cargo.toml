@@ -1,0 +1,18 @@
+[package]
+name = "pgs3-wire-tests"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+base64 = "=0.22.1"
+crc = "=3.4.0"
+crc32fast = "=1.5.0"
+hmac = "=0.12.1"
+httpdate = "=1.0.3"
+quick-xml = "=0.38.3"
+sha1 = "=0.10.6"
+sha2 = "=0.10.9"

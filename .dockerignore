@@ -1,0 +1,10 @@
+.git
+.github
+target
+**/target
+dist
+bench/results
+artifacts/acceptance
+tests/ceph-s3-tests
+**/__pycache__
+**/*.pyc
