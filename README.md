@@ -170,6 +170,8 @@ the host.
 
 ## Documentation
 
+- [快速上手教程（中文）](docs/getting-started.md)
+- [使用说明（中文）](docs/usage.md)
 - [Architecture and lifecycle](docs/design.md)
 - [Schema and invariants](docs/schema.md)
 - [GUC reference](docs/guc.md)
