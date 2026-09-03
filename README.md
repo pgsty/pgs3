@@ -18,7 +18,7 @@ and recovery remain inside PostgreSQL.
 > not meet the project gates. Read [Known limitations](docs/known-limitations.md)
 > before deployment.
 
-The current GitHub project release is [`v0.1.0`](https://github.com/pgsty/pgs3/releases/tag/v0.1.0).
+The current GitHub project release is [`v0.1.1`](https://github.com/pgsty/pgs3/releases/tag/v0.1.1).
 It contains extension catalog version `0.1.1`, preserving the tested
 `0.1.0 -> 0.1.1` PostgreSQL extension upgrade path.
 
