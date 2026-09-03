@@ -1,6 +1,12 @@
 SHELL := /usr/bin/env bash
 
 CARGO ?= cargo
+PYTHON ?= python3
+PYTHON_CHECK = $(PYTHON) -c 'import pathlib, sys; [compile(pathlib.Path(name).read_bytes(), name, "exec") for name in sys.argv[1:]]'
+CARGO_TARGET_DIR ?= $(CURDIR)/target
+PYTHONDONTWRITEBYTECODE ?= 1
+export CARGO_TARGET_DIR PYTHONDONTWRITEBYTECODE
+
 PG_MAJOR ?= 17
 
 define find_pg_config
@@ -19,7 +25,7 @@ PG_CONFIG_18 ?= $(call find_pg_config,18)
 PG_CONFIG ?= $(PG_CONFIG_$(PG_MAJOR))
 PGRX_FEATURE := pg$(PG_MAJOR)
 
-.PHONY: fmt fmt-check print-pg-config check check-matrix clippy clippy-matrix lib-unit lib-unit-matrix unit package package-matrix \
+.PHONY: clean fmt fmt-check print-pg-config check check-matrix clippy clippy-matrix lib-unit lib-unit-matrix unit package package-matrix \
 	sql-test sql-test-matrix upgrade-static upgrade-test upgrade-test-matrix image image-matrix client-image http-smoke \
 	http-smoke-matrix client-test client-test-matrix integration-lint acceptance verify \
 	ceph-image ceph-collect ceph-lint ceph-test ceph-test-matrix \
@@ -59,6 +65,16 @@ lib-unit-matrix:
 
 unit:
 	$(CARGO) test --manifest-path tests/wire/Cargo.toml --locked
+
+# Keep every Cargo workspace under one root target directory and remove
+# interpreter/test caches that otherwise accumulate throughout the tree.
+clean:
+	$(CARGO) clean
+	rm -rf -- tests/wire/target scripts/lib/__pycache__
+	find tests -type d -name __pycache__ -prune -exec rm -rf -- {} +
+	find scripts tests -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
+	rm -rf -- tests/pg_regress/results
+	rm -f -- tests/pg_regress/regression.diffs tests/pg_regress/regression.out
 
 package:
 	$(CARGO) pgrx package --pg-config $(PG_CONFIG) --no-default-features --features $(PGRX_FEATURE)
@@ -103,7 +119,7 @@ ceph-collect:
 ceph-lint:
 	bash -n scripts/build-ceph-image.sh tests/ceph/collect-only.sh \
 		tests/ceph/container_run.sh tests/ceph/run-ceph.sh
-	python3 -m py_compile tests/ceph/selection.py tests/ceph/summarize.py \
+	$(PYTHON_CHECK) tests/ceph/selection.py tests/ceph/summarize.py \
 		tests/ceph/write_config.py tests/ceph/pgs3_adapter.py \
 		tests/ceph/adapter_selftest.py tests/ceph/test_harness.py
 	python3 -m unittest tests/ceph/test_harness.py
@@ -195,7 +211,7 @@ integration-lint:
 	bash -n $$(find scripts tests/integration tests/ceph tests/reliability \
 		tests/robustness tests/fuzz tests/scale tests/benchmark tests/upgrade \
 		-type f -name '*.sh' -print | sort)
-	python3 -m py_compile $$(find scripts tests/integration tests/ceph \
+	$(PYTHON_CHECK) $$(find scripts tests/integration tests/ceph \
 		tests/reliability tests/robustness tests/fuzz tests/scale tests/benchmark tests/upgrade \
 		-type f -name '*.py' -print | sort)
 	python3 -m unittest discover --start-directory tests/integration --pattern 'test_*.py'

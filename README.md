@@ -1,185 +1,249 @@
 # pgs3
 
-`pgs3` 0.1.1 is a PostgreSQL extension that turns one database into a path-style,
-S3-compatible HTTP endpoint. Object semantics live in SQL; PostgreSQL background
-workers authenticate and translate HTTP requests without a sidecar process.
+[![Release](https://img.shields.io/github/v/release/pgsty/pgs3?display_name=tag&sort=semver)](https://github.com/pgsty/pgs3/releases/latest)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17%20%7C%2018-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-The project targets PostgreSQL 17 and 18 (16 is best effort) and is optimized for
-versioned, tenant-isolated agent artifacts from a few KiB to a few MiB. It is not
-intended to compete with object stores on very large-object throughput.
+**S3-compatible object storage implemented inside PostgreSQL.**
 
-> **Development status:** the current package-backed PostgreSQL 17 and 18 images
-> install the extension and pass their SQL/HTTP gates. On PostgreSQL 17, the
-> complete client
-> matrix, 195 selected ceph s3-tests, crash/fast-stop/SIGHUP/standby reliability,
-> and the fixed malformed-request corpus all pass. This is still not a
-> production-ready S3 endpoint: the complete benchmark ran, but performance gates
-> 12--13 fail, and the current 100,000-object fork misses its one-second
-> gate. See
-> [acceptance evidence](docs/acceptance.md) and
-> [known limitations](docs/known-limitations.md).
+`pgs3` turns one PostgreSQL database into a path-style S3 endpoint. PostgreSQL
+background workers authenticate HTTP requests and translate them into SQL-backed
+object operations, so metadata, versions, content, authorization, WAL, backup,
+and recovery remain inside PostgreSQL.
 
-The reviewed evidence checkpoints are deliberately narrower than a release claim:
+> [!WARNING]
+> `pgs3` is an early alpha. The current implementation has broad functional and
+> compatibility coverage, but it is not yet a production-ready general-purpose
+> object store. Small-object performance and the 100,000-object Fork target do
+> not meet the project gates. Read [Known limitations](docs/known-limitations.md)
+> before deployment.
 
-- PostgreSQL 17 client matrix:
-  [`clients-pg17-72577`](artifacts/acceptance/20260831T064443Z-clients-pg17-72577/manifest.json)
-  (`PASS`). This includes both aws CLI surfaces, a 100 MiB/13-part upload with
-  exact multipart ETag and SHA-256/rclone verification, rclone, boto3 flexible
-  checksums, DuckDB httpfs, and a real opt-in privileged s3fs FUSE mount with
-  vim/grep/find. The identical PostgreSQL 18 matrix also passes in
-  [`clients-pg18-71442`](artifacts/acceptance/20260831T064421Z-clients-pg18-71442/manifest.json).
-- Pinned ceph s3-tests:
-  [`ceph-s3-tests-pg17-74469`](artifacts/acceptance/20260831T064550Z-ceph-s3-tests-pg17-74469/manifest.json)
-  (`PASS`): 195 selected and passed from a fixed 209-case candidate set, with
-  exactly 14 source-audited exclusions and no failure, error, skip, or not-run.
-- PostgreSQL 17 reliability, robustness, and deterministic fuzz:
-  [`reliability-all-pg17-80047`](artifacts/acceptance/20260831T065006Z-reliability-all-pg17-80047/manifest.json),
-  [`http-robustness-pg17-83397`](artifacts/acceptance/20260831T065124Z-http-robustness-pg17-83397/manifest.json),
-  and
-  [`fuzz-malformed-pg17-84795`](artifacts/acceptance/20260831T065154Z-fuzz-malformed-pg17-84795/manifest.json)
-  (all `PASS`; fuzz 24/24 with exact process identity).
-- Current PG17/PG18 package/runtime and real catalog transition:
-  [`sql-pg17-83057`](artifacts/acceptance/20260831T065107Z-sql-semantic-pg17-83057/manifest.json),
-  [`sql-pg18-83550`](artifacts/acceptance/20260831T065126Z-sql-semantic-pg18-83550/manifest.json),
-  [`upgrade-pg17-65725`](artifacts/acceptance/20260831T063728Z-extension-upgrade-pg17-65725/manifest.json),
-  and [`upgrade-pg18-67508`](artifacts/acceptance/20260831T063921Z-extension-upgrade-pg18-67508/manifest.json)
-  (all `PASS`). The client matrices above provide live HTTP coverage on both
-  package images.
-- Full SQL scale on the current PG17 image:
-  [`scale-pg17-90791`](artifacts/acceptance/20260831T065441Z-scale-pg17-90791/manifest.json)
-  (`FAIL` overall): LIST 2.358 ms and delimiter LIST 9.487 ms pass, while fork
-  1944.071 ms fails. A same-final-source iteration reached 865.495 ms before the
-  golden image was built; it is variance/optimization evidence, not the final
-  image's gate result.
-- Full pgs3/MinIO sweep:
-  [`http-benchmark-pg17-91774`](artifacts/acceptance/20260831T065555Z-http-benchmark-acceptance-pg17-91774/manifest.json)
-  completed with verified content and zero request errors. Curve completeness
-  and the 8 MiB throughput target pass; fixed small-object gates 12--13 fail.
+The current GitHub project release is [`v0.1.0`](https://github.com/pgsty/pgs3/releases/tag/v0.1.0).
+It contains extension catalog version `0.1.1`, preserving the tested
+`0.1.0 -> 0.1.1` PostgreSQL extension upgrade path.
 
-Every manifest records a dirty-worktree digest and exact image identity. The
-manifests above exercise the current extension source in PG17 image
-`270f9b60...` and PG18 image `0bc9f5a9...`, at workspace digest `780ea7bb...`;
-later documentation and cleanup-harness-only edits do not change those binaries.
+## Why pgs3?
+
+`pgs3` is designed for versioned, tenant-isolated agent artifacts from a few KiB
+to a few MiB when PostgreSQL is already the system of record.
+
+- **One data system:** objects and metadata use ordinary PostgreSQL tables,
+  indexes, transactions, WAL, backup, and recovery.
+- **S3-compatible clients:** AWS CLI, boto3, rclone, DuckDB `httpfs`, and s3fs
+  can use the same endpoint in path-style mode.
+- **PostgreSQL authorization:** SigV4 access keys map to restricted database
+  roles; grants and row-level security isolate tenants.
+- **Permanent history:** overwrites create versions, ordinary deletes create
+  delete markers, and historical versions remain addressable.
+- **Content sharing:** canonical blobs deduplicate identical payloads and are
+  shared by Copy, Restore, and Fork operations.
+- **No sidecar data service:** PostgreSQL background workers own the HTTP
+  listener and invoke the SQL semantic layer through SPI.
+
+## Capability overview
+
+| Area | Current support |
+| --- | --- |
+| Authentication | SigV4 headers, presigned URLs, full-hash and unsigned payloads, AWS streaming payload forms |
+| Buckets | Create, head, list, location, versioning status, and empty-bucket delete |
+| Objects | Put, get, head, range, conditional writes, delete, bulk delete, copy, and checksums |
+| Listings | ListObjectsV2 with prefix, delimiter, pagination, and version listing |
+| Multipart | Create, upload/list parts, complete, abort, multipart ETag, and SHA-256 composite checksum |
+| pgs3 extensions | SQL restore of a historical version and metadata-only bucket Fork |
+| Tenancy | PostgreSQL role mapping, restricted worker role, grants, and default-deny RLS |
+| PostgreSQL | 17 and 18 supported; 16 is best effort |
+
+Deliberate first-phase exclusions include virtual-host bucket URLs, built-in TLS,
+IAM or bucket-policy languages, ACLs, lifecycle rules, logical-replication
+topologies, and cross-database endpoint routing. TLS must terminate at a reverse
+proxy that preserves the signed request path and headers.
 
 ## Architecture
 
-- `pgs3.bucket`, `pgs3.object`, `pgs3.blob`, and hash-partitioned `pgs3.chunk`
-  keep metadata, versions, deduplicated content, and bounded chunks in ordinary
-  PostgreSQL relations.
-- SQL functions implement PUT/GET/range/head/delete/copy/list/version/restore,
-  fork, staged upload, multipart, and garbage-collection semantics.
-- A preload or dynamically started launcher owns a pool of PostgreSQL background
-  workers. Each worker performs nonblocking HTTP I/O and calls SPI only on its
-  PostgreSQL main thread.
-- For staged non-multipart PutObject, the restricted worker seals its
-  server-computed whole-body digests only after PostgreSQL returns the exact
-  ordered canonical chunk manifest. The final transaction locks and matches that
-  manifest before publication; public SQL `put_chunk`/`complete_upload` continue
-  to hash the stored bytes themselves.
-- Staging defaults to 4 MiB chunks. Fixed-length body slices stay borrowed through
-  HTTP framing, staged buffers grow progressively and reuse their allocation, and
-  SHA-1/CRC state is created only when requested; SHA-2 assembly is enabled for
-  AArch64. The complete 4 MiB sweep records 167.894 MiB/s for the required 8 MiB
-  PUT, passing gate 14; the small-object gates remain failed.
-- SigV4 credentials map access keys to PostgreSQL roles. `GRANT` plus default-deny
-  RLS is the authorization model; there is no parallel IAM implementation. A
-  custom `pgs3.server_role` receives only the required runtime grants during
-  install/update, and the launcher stops HTTP listeners if its restricted-role
-  attributes, memberships, or grants drift.
+```text
+S3 client
+   |
+   | HTTP + SigV4
+   v
+PostgreSQL background workers
+   |
+   | SPI in short transactions
+   v
+SQL semantic layer
+   |
+   +-- bucket / object versions / delete markers
+   +-- canonical blobs and chunk extents
+   +-- credentials, RLS, metrics, and worker state
+   |
+   v
+PostgreSQL storage, WAL, backup, and recovery
+```
 
-The normative choices and specification conflicts are recorded in
-[decisions.md](docs/decisions.md). Start with [design.md](docs/design.md) and
-[schema.md](docs/schema.md) when changing the implementation.
+Object behavior is defined in SQL. Rust owns HTTP framing, SigV4, streaming,
+worker lifecycle, and the protocol-to-SQL boundary; it does not implement a
+second object-semantic engine.
 
-## Development
+See [Architecture and lifecycle](docs/design.md),
+[Schema and invariants](docs/schema.md), and
+[API-to-SQL mapping](docs/api-sql-mapping.md) for the detailed contract.
 
-The Docker/package toolchain pins `cargo-pgrx` 0.19.2. This macOS host currently
-has 0.19.1, so a host package-parity claim is blocked until the pinned version and
-matching PostgreSQL development headers are installed. After installing them, the
-host parity checks are:
+## Quick start
+
+The reproducible development path builds a PostgreSQL image containing the
+extension:
+
+```bash
+git clone https://github.com/pgsty/pgs3.git
+cd pgs3
+make image PG_MAJOR=17
+```
+
+The complete local walkthrough covers container startup, credential creation,
+AWS CLI configuration, object versioning, and cleanup:
+
+- [Quick-start tutorial (Chinese)](docs/getting-started.md)
+- [Usage guide (Chinese)](docs/usage.md)
+
+A configured client must use path-style addressing and the explicit endpoint:
+
+```bash
+export PGS3_ENDPOINT='https://s3.example.com'
+export AWS_ACCESS_KEY_ID='<access-key>'
+export AWS_SECRET_ACCESS_KEY='<secret-key>'
+export AWS_DEFAULT_REGION='us-east-1'
+
+aws --endpoint-url "$PGS3_ENDPOINT" s3api list-buckets
+```
+
+Do not expose the cleartext worker port directly to the Internet, and do not
+allow a client to fall back silently to AWS when `PGS3_ENDPOINT` is missing.
+
+## Build and install
+
+The source release requires:
+
+- Rust with the 2024 edition;
+- `cargo-pgrx 0.19.2`;
+- PostgreSQL 17 or 18 server development files;
+- Docker for the pinned package and integration-test path.
+
+Common targets:
 
 ```bash
 make fmt-check
-make check-matrix
-make package-matrix
-```
-
-The currently reproducible pinned package path is the container matrix:
-
-```bash
+make check PG_MAJOR=17
+make package PG_MAJOR=17
 make image-matrix
 ```
 
-Repository image scripts default `DOCKER_BUILDKIT=0` on this host so pinned local
-cache builds avoid slow/failing BuildKit frontend metadata resolution. Users may
-override the variable explicitly; this changes the builder path, not image pins.
+The host checks require a matching `pg_config`. Container builds are the
+portable path when both PostgreSQL development versions are not installed on the
+host.
 
-SQL tests build a disposable PostgreSQL image with the extension installed and
-run every file under `tests/sql/`:
+After installing the package, preload the library and configure its endpoint:
 
-```bash
-make sql-test PG_MAJOR=17
-make sql-test PG_MAJOR=18
+```conf
+shared_preload_libraries = 'pgs3'
+pgs3.enabled = on
+pgs3.target_database = 'artifacts'
+pgs3.listen_addr = '127.0.0.1'
+pgs3.port = 9000
+pgs3.workers = 4
 ```
 
-The current catalog version is 0.1.1. The package contains a real
-`0.1.0 -> 0.1.1` update script, while the upgrade harness injects the frozen,
-checksummed 0.1.0 install fixture only into its disposable test cluster. It then
-compares an upgraded rich fixture with a direct 0.1.1 install:
+Install `CREATE EXTENSION pgs3` in the target database before enabling traffic.
+Review the full [GUC reference](docs/guc.md) and
+[operations guide](docs/operations.md) before using automatic startup, changing
+the worker role, or exposing an endpoint.
+
+## Security model
+
+An access key resolves to a PostgreSQL role after SigV4 verification. Each object
+transaction runs through a restricted service role and transaction-local tenant
+role; RLS is the final data-isolation boundary.
+
+- Application roles should be `NOLOGIN`, `NOINHERIT`, and
+  `NOBYPASSRLS`.
+- The pgs3 service role must not be used as a tenant or application identity.
+- Secrets are stored reversibly because SigV4 verification requires them; treat
+  database backups as credential-bearing material.
+- Bucket names, object keys, credentials, SQL text, and tenant identifiers must
+  not appear in ordinary metrics labels or cross-tenant errors.
+- Production endpoints require external TLS termination and restricted
+  PostgreSQL administration access.
+
+## Validation status
+
+The reviewed package-backed baseline records:
+
+| Gate | Result |
+| --- | --- |
+| PostgreSQL 17 and 18 SQL semantics and package runtime | Pass |
+| PostgreSQL 17 and 18 client matrices | Pass |
+| Selected Ceph S3 compatibility suite | 195/195 pass |
+| Real `0.1.0 -> 0.1.1` upgrade on PostgreSQL 17 and 18 | Pass |
+| Crash recovery, fast stop, SIGHUP, and standby reads | Pass |
+| Fixed malformed-request and deterministic fuzz suites | Pass |
+| 8 MiB PUT throughput and LIST targets | Pass |
+| Small-object GET/PUT targets | Fail |
+| 100,000-object Fork under one second | Fail |
+
+See [Acceptance evidence](docs/acceptance.md) and
+[Performance results](docs/perf.md) for exact scope and measurements. Test runs
+write redacted evidence under `artifacts/acceptance/`; generated evidence is
+not committed to the source repository.
+
+The aggregate commands are:
 
 ```bash
-make upgrade-test PG_MAJOR=17
-make upgrade-test PG_MAJOR=18
-make upgrade-test-matrix
+make integration-lint
+make unit
+make verify
+make acceptance
 ```
 
-The existence of this path and harness is an implementation fact; each packaged
-release still needs a recorded PG17/PG18 upgrade run before release.
+`make acceptance` is intentionally strict and currently returns non-zero for
+the documented performance failures. It does not convert missing tools or
+blocked capabilities into passes.
 
-The reliability harness exposes an offline check plus isolated Docker runtime
-scenarios:
-
-```bash
-make reliability-static PG_MAJOR=17
-make crash-test PG_MAJOR=17
-make fast-stop-test PG_MAJOR=17
-make reload-test PG_MAJOR=17
-make standby-test PG_MAJOR=17
-make lifecycle-test PG_MAJOR=17   # fast-stop plus reload
-make reliability-test PG_MAJOR=17 # all four runtime scenarios
-make robustness-test PG_MAJOR=17  # fixed seven-case boundary corpus
-make fuzz-test PG_MAJOR=17        # 8 core + 16 seeded malformed cases
-```
-
-Runtime targets build the current PostgreSQL image by default. Set
-`PGS3_SKIP_BUILD=1` only to reuse an image already built from the workspace under
-test, for example `make crash-test PG_MAJOR=18 PGS3_SKIP_BUILD=1`. The standby
-scenario, and therefore `reliability-test`, is a PostgreSQL 17 gate; the static,
-crash, fast-stop, reload, and lifecycle targets also accept PostgreSQL 18. A
-static PASS is not runtime evidence. See the
-[operations guide](docs/operations.md#executable-reliability-gates) for the
-assertions and evidence layout.
-
-`make verify` is the aggregate formatting/build/package/SQL gate; it is not the
-release gate. `make acceptance` additionally invokes the mandatory client, ceph,
-reliability, scale, robustness, fuzz, and benchmark suites and currently fails on
-the measured performance gates.
-Container builds
-accept `PG_MAJOR=17` or `PG_MAJOR=18` and do not install or start PostgreSQL on
-the host.
+Use `make clean` to remove the consolidated Cargo build directory and scattered
+interpreter/test caches.
 
 ## Documentation
 
-- [快速上手教程（中文）](docs/getting-started.md)
-- [使用说明（中文）](docs/usage.md)
-- [Architecture and lifecycle](docs/design.md)
-- [Schema and invariants](docs/schema.md)
-- [GUC reference](docs/guc.md)
-- [Operations and TLS termination](docs/operations.md)
-- [Known limitations](docs/known-limitations.md)
-- [Acceptance evidence and release gate](docs/acceptance.md)
-- [Implementation pitfalls](docs/pitfalls.md)
-- [Performance results and methodology](docs/perf.md)
+| Document | Purpose |
+| --- | --- |
+| [Quick start](docs/getting-started.md) | Local PostgreSQL 17 container and first S3 workflow (Chinese) |
+| [Usage guide](docs/usage.md) | AWS CLI, boto3, rclone, s3fs, DuckDB, and SQL usage (Chinese) |
+| [Design](docs/design.md) | Architecture, ownership, transaction, and worker lifecycle |
+| [Schema](docs/schema.md) | Tables, indexes, invariants, RLS, and upgrade rules |
+| [Configuration](docs/guc.md) | GUC defaults, ranges, reload, and restart behavior |
+| [Operations](docs/operations.md) | TLS, HA, backup, recovery, observability, and upgrades |
+| [API mapping](docs/api-sql-mapping.md) | S3 routes and their SQL semantic functions |
+| [Acceptance](docs/acceptance.md) | Release gates, evidence boundaries, and current results |
+| [Known limitations](docs/known-limitations.md) | Unsupported and incomplete behavior |
+| [Implementation pitfalls](docs/pitfalls.md) | Compatibility, safety, and correctness traps |
+| [Agent skill](SKILL.md) | Guardrails for agents using a deployed pgs3 endpoint |
 
-TLS, virtual-host addressing, ACLs, bucket policies, lifecycle rules, logical
-replication, and cross-database endpoint sharing are intentionally out of scope.
+## Repository layout
+
+```text
+src/       Rust extension, protocol, S3 adapter, and background workers
+sql/       Install and versioned extension-update SQL
+tests/     Unit, SQL, client, compatibility, reliability, and performance suites
+scripts/   Build and acceptance orchestration
+docker/    Reproducible PostgreSQL and client images
+docs/      Design, operations, usage, and validation documentation
+```
+
+## Contributing
+
+Bug reports and focused pull requests are welcome through
+[GitHub Issues](https://github.com/pgsty/pgs3/issues). Preserve the SQL semantic
+boundary, tenant non-disclosure, and fail-closed acceptance behavior. Run the
+smallest relevant test first, then the applicable matrix before submitting a
+change.
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
