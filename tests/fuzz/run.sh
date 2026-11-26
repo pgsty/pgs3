@@ -18,7 +18,7 @@ fuzz_case_timeout=${PGS3_FUZZ_CASE_TIMEOUT:-3}
 
 usage() {
     cat <<'USAGE'
-usage: run.sh [--pg 17|18] [--skip-build] [--static-only] [--run-id ID]
+usage: run.sh [--pg 17|18|19] [--skip-build] [--static-only] [--run-id ID]
               [--workers N] [--seed SEED] [--random-cases N]
               [--case-timeout SECONDS]
 
@@ -76,7 +76,7 @@ while (($#)); do
 done
 
 case ${pg_major} in
-    17|18) ;;
+    17|18|19) ;;
     *) printf 'unsupported PostgreSQL major: %s\n' "${pg_major}" >&2; exit 2 ;;
 esac
 case ${skip_build}:${static_only} in

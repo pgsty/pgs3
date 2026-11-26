@@ -81,7 +81,7 @@ rel_wait_postgres() {
     local container=$1
     printf 'waiting for PostgreSQL in %s\n' "${container}"
     for _ in $(seq 1 120); do
-        if docker exec "${container}" pg_isready \
+        if docker exec "${container}" pg_isready --host=127.0.0.1 \
             --username postgres --dbname postgres >/dev/null 2>&1; then
             docker exec "${container}" psql --username postgres --dbname postgres \
                 --no-psqlrc --tuples-only --no-align \

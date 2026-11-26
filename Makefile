@@ -13,6 +13,7 @@ define find_pg_config
 $(strip $(shell \
 	for candidate in \
 		/usr/lib/postgresql/$(1)/bin/pg_config \
+		/usr/pgsql-$(1)/bin/pg_config \
 		/opt/homebrew/opt/postgresql@$(1)/bin/pg_config \
 		/usr/local/opt/postgresql@$(1)/bin/pg_config; do \
 		if test -x "$$candidate"; then printf '%s' "$$candidate"; exit 0; fi; \
@@ -20,8 +21,10 @@ $(strip $(shell \
 	printf '%s' /usr/lib/postgresql/$(1)/bin/pg_config))
 endef
 
+PG_CONFIG_16 ?= $(call find_pg_config,16)
 PG_CONFIG_17 ?= $(call find_pg_config,17)
 PG_CONFIG_18 ?= $(call find_pg_config,18)
+PG_CONFIG_19 ?= $(call find_pg_config,19)
 PG_CONFIG ?= $(PG_CONFIG_$(PG_MAJOR))
 PGRX_FEATURE := pg$(PG_MAJOR)
 
@@ -48,6 +51,7 @@ check:
 check-matrix:
 	$(MAKE) check PG_MAJOR=17
 	$(MAKE) check PG_MAJOR=18
+	$(MAKE) check PG_MAJOR=19
 
 clippy:
 	PGRX_PG_CONFIG_PATH=$(PG_CONFIG) $(CARGO) clippy --no-default-features --features $(PGRX_FEATURE) --all-targets -- -D warnings
@@ -55,6 +59,7 @@ clippy:
 clippy-matrix:
 	$(MAKE) clippy PG_MAJOR=17
 	$(MAKE) clippy PG_MAJOR=18
+	$(MAKE) clippy PG_MAJOR=19
 
 lib-unit:
 	PGRX_PG_CONFIG_PATH=$(PG_CONFIG) $(CARGO) test --no-default-features --features $(PGRX_FEATURE) --lib
@@ -62,6 +67,7 @@ lib-unit:
 lib-unit-matrix:
 	$(MAKE) lib-unit PG_MAJOR=17
 	$(MAKE) lib-unit PG_MAJOR=18
+	$(MAKE) lib-unit PG_MAJOR=19
 
 unit:
 	$(CARGO) test --manifest-path tests/wire/Cargo.toml --locked
@@ -82,6 +88,7 @@ package:
 package-matrix:
 	$(MAKE) package PG_MAJOR=17
 	$(MAKE) package PG_MAJOR=18
+	$(MAKE) package PG_MAJOR=19
 
 sql-test:
 	PG_MAJOR=$(PG_MAJOR) PGS3_SKIP_BUILD=$${PGS3_SKIP_BUILD:-0} scripts/test-sql.sh
@@ -89,6 +96,7 @@ sql-test:
 sql-test-matrix:
 	$(MAKE) sql-test PG_MAJOR=17
 	$(MAKE) sql-test PG_MAJOR=18
+	$(MAKE) sql-test PG_MAJOR=19
 
 upgrade-static:
 	PG_MAJOR=$(PG_MAJOR) tests/upgrade/run.sh --static-only --pg $(PG_MAJOR)
@@ -100,12 +108,13 @@ upgrade-test:
 upgrade-test-matrix:
 	$(MAKE) upgrade-test PG_MAJOR=17
 	$(MAKE) upgrade-test PG_MAJOR=18
+	$(MAKE) upgrade-test PG_MAJOR=19
 
 image:
 	scripts/build-images.sh $(PG_MAJOR)
 
 image-matrix:
-	scripts/build-images.sh 17 18
+	scripts/build-images.sh
 
 client-image:
 	scripts/build-client-image.sh
@@ -132,6 +141,7 @@ ceph-test:
 ceph-test-matrix:
 	$(MAKE) ceph-test PG_MAJOR=17
 	$(MAKE) ceph-test PG_MAJOR=18
+	$(MAKE) ceph-test PG_MAJOR=19
 
 http-smoke:
 	PG_MAJOR=$(PG_MAJOR) PGS3_SKIP_BUILD=$${PGS3_SKIP_BUILD:-0} \
@@ -140,6 +150,7 @@ http-smoke:
 http-smoke-matrix:
 	$(MAKE) http-smoke PG_MAJOR=17
 	$(MAKE) http-smoke PG_MAJOR=18
+	$(MAKE) http-smoke PG_MAJOR=19
 
 client-test:
 	PG_MAJOR=$(PG_MAJOR) PGS3_SKIP_BUILD=$${PGS3_SKIP_BUILD:-0} \
@@ -149,6 +160,7 @@ client-test:
 client-test-matrix:
 	$(MAKE) client-test PG_MAJOR=17
 	$(MAKE) client-test PG_MAJOR=18
+	$(MAKE) client-test PG_MAJOR=19
 
 reliability-static:
 	PG_MAJOR=$(PG_MAJOR) PGS3_SKIP_BUILD=$${PGS3_SKIP_BUILD:-0} \

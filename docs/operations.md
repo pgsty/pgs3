@@ -2,15 +2,13 @@
 
 ## Readiness warning
 
-Current package-backed PostgreSQL 17/18 SQL, HTTP, and client gates pass. On PG17,
-195 selected Ceph cases, crash/GC, fast-stop, SIGHUP, hot standby, robustness, and
-24-case deterministic fuzz have PASS evidence. It is still unsafe
-to deploy as a production endpoint: measured performance gates 12--14 fail and
-to deploy as a production endpoint: measured performance gates 12--13 fail,
-although gate 14 passes, and the current 100,000-object fork misses one second.
-Non-SHA multipart final
-checksum composition also remains provisional under D024. Exact status and
-manifests are in [acceptance.md](acceptance.md).
+The packaged extension passes SQL, HTTP, client and extension upgrade tests on
+PostgreSQL 17.12, 18.7 and 19.0 with pgrx 0.20.1. The PG17 baseline also passed
+195 selected Ceph cases, crash recovery and GC, fast stop, SIGHUP, hot standby,
+robustness, and 24 deterministic fuzz cases. Small-object performance fell short
+of gates 12 and 13, and the 100,000-object fork exceeded one second. These
+results still block production deployment. Non-SHA multipart final checksum
+composition remains provisional under D024. See the [acceptance evidence](acceptance.md).
 
 ## Deployment shape
 
@@ -21,9 +19,10 @@ clients ── HTTPS ── nginx/HAProxy ── cleartext loopback/private HTTP
                                                                   └── one PG database
 ```
 
-pgrx code and SQL extension versions must match. PostgreSQL 17 and 18 are required
-package targets; PostgreSQL 16 is best effort. Keep the proxy and database on the
-same host or a tightly controlled private network because the backend has no TLS.
+Install the shared library and SQL files from the same pgs3 build. PostgreSQL
+17, 18 and 19 are supported package targets. PostgreSQL 16 is best effort.
+Keep the proxy and database on the same host or a tightly controlled private
+network because the backend has no TLS.
 
 ## Preflight
 
@@ -350,29 +349,20 @@ The aggregate release entry point is:
 make acceptance
 ```
 
-It delegates to `scripts/acceptance-all.sh`, runs every independent PG17/PG18,
-static, client, Ceph, reliability, fixed-robustness, deterministic-fuzz, scale,
-and benchmark gate, and
-reports an aggregate failure only after later suites have had a chance to record
-their evidence. One failure therefore does not erase the status of subsequent
-independent gates.
+`scripts/acceptance-all.sh` checks Rust builds, packaging, SQL, upgrades, and
+clients on PostgreSQL 17, 18 and 19. It runs Ceph, reliability, robustness,
+fuzz, scale, and benchmarks on PG17 and reports an aggregate result after all
+independent suites finish.
 
-Host Rust/package checks still need version-specific PostgreSQL development
-toolchains. The Makefile resolves `PG_CONFIG_17` and `PG_CONFIG_18` across Debian
-and Homebrew layouts or accepts explicit paths. On the current macOS evidence
-host, PG18 is available through Homebrew but PG17 `pg_config` is genuinely absent;
-a host PG17 build/package rerun is `BLOCKED` until that toolchain is installed or
-`PG_CONFIG_17` names a valid binary. The host also has `cargo-pgrx` 0.19.1 while
-the Docker/release toolchain pins 0.19.2, so host package parity is separately
-blocked until the pinned cargo tool is installed. Do not convert either preflight
-condition into a skip or confuse it with completed Docker package/runtime gates.
+Host builds require Rust 1.99.1 or newer, `cargo-pgrx 0.20.1`, and the server
+development files for each major being tested. The Makefile resolves
+`PG_CONFIG_17`, `PG_CONFIG_18` and `PG_CONFIG_19` across Debian, PGDG RPM and
+Homebrew layouts. Set any of these variables to the full path of a custom `pg_config`.
 
-The s3fs case requires a real FUSE mount. On Docker Desktop, where `/dev/fuse` is
-not exposed normally, the harness permits a disposable privileged-container
-fallback only with the explicit `PGS3_ALLOW_PRIVILEGED_FUSE=1` opt-in. It creates
-the device only inside that run-labeled container. Without either ordinary FUSE
-access or this explicit opt-in, the client gate is `BLOCKED`, never a synthetic
-PASS.
+The s3fs case requires a real FUSE mount. The harness checks `/dev/fuse`
+inside a client container on the Docker engine. If the engine cannot pass
+through the device, `PGS3_ALLOW_PRIVILEGED_FUSE=1` permits the fallback that
+creates it inside a disposable privileged container.
 
 The repository has a destructive, disposable-cluster reliability harness. It
 creates run-labeled Docker networks, containers, and named volumes, verifies the
@@ -403,7 +393,7 @@ make crash-test PG_MAJOR=18 PGS3_SKIP_BUILD=1
 ```
 
 The static, crash, fast-stop, reload, and lifecycle targets accept
-`PG_MAJOR=17` or `PG_MAJOR=18`. Physical-standby coverage is intentionally a
+`PG_MAJOR=17`, `PG_MAJOR=18` or `PG_MAJOR=19`. Physical-standby coverage is intentionally a
 PostgreSQL 17 gate, so `standby-test` and the all-scenarios `reliability-test`
 require `PG_MAJOR=17`. The Make targets pass both `PG_MAJOR` and
 `PGS3_SKIP_BUILD` into the harness; an unavailable reused image is BLOCKED, not a
@@ -561,25 +551,30 @@ it from service and treat that as a failed reliability gate.
 
 ## Upgrade and rollback
 
-The current release version is 0.1.1 and ships a real
-`pgs3--0.1.0--0.1.1.sql` transition. The package does not advertise the frozen
-0.1.0 install fixture as a current fresh-install choice; the upgrade harness
-copies that checksummed fixture only into a disposable test image. It then:
+Install the 0.1.2 package for your PostgreSQL major and restart PostgreSQL to
+load the new shared library. In each database with pgs3 installed, run
+`ALTER EXTENSION pgs3 UPDATE;` and check `SELECT pgs3.extension_version();`.
+PostgreSQL follows the 0.1.0 → 0.1.1 → 0.1.2 update path automatically.
+The final step advances the catalog version and preserves the existing SQL objects.
+
+The upgrade harness starts from a checksummed 0.1.0 fixture in a disposable
+database. It exercises the following steps.
 
 1. installs 0.1.0 and creates inline, chunked, multipart, copied, forked,
    restored, delete-marker, pending-upload, credential, and cross-tenant state;
 2. records a data/refcount/catalog fingerprint;
-3. runs `ALTER EXTENSION pgs3 UPDATE TO '0.1.1'`;
+3. upgrades to 0.1.1 and then to the default version, 0.1.2;
 4. verifies `pgs3.extension_version()`, preserved data/RLS/refcounts, worker-only
    grants, and extension membership; and
-5. compares the upgraded catalog and full semantic suite with a direct 0.1.1
+5. compares the upgraded catalog and full semantic suite with a direct 0.1.2
    installation.
 
-Run both majors before release:
+Run the upgrade checks on all supported majors before release.
 
 ```sh
 make upgrade-test PG_MAJOR=17
 make upgrade-test PG_MAJOR=18
+make upgrade-test PG_MAJOR=19
 # or
 make upgrade-test-matrix
 ```
@@ -598,7 +593,7 @@ or a second endpoint/port during early releases.
 
 Do not call an installation production-ready until all are reproducible:
 
-- `cargo pgrx package` for PostgreSQL 17 and 18 and an upgrade/install smoke test;
+- `cargo pgrx package` and an upgrade/install smoke test for PostgreSQL 17, 18 and 19
 - SQL semantic suite including 50-way conditional races repeated 20 times;
 - aws CLI, rclone, boto3, s3fs, and DuckDB client matrix;
 - 100 MiB multipart with correct ETag and rclone check;

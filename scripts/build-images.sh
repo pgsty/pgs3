@@ -6,14 +6,14 @@ image_prefix=${PGS3_IMAGE_PREFIX:-pgs3-test}
 docker_buildkit=${DOCKER_BUILDKIT:-0}
 
 if (($# == 0)); then
-    set -- 17 18
+    set -- 17 18 19
 fi
 
 for pg_major in "$@"; do
     case ${pg_major} in
-        17|18) ;;
+        17|18|19) ;;
         *)
-            printf 'unsupported PostgreSQL major: %s (expected 17 or 18)\n' "${pg_major}" >&2
+            printf 'unsupported PostgreSQL major: %s (expected 17, 18 or 19)\n' "${pg_major}" >&2
             exit 2
             ;;
     esac

@@ -19,10 +19,8 @@ pub(crate) const LAUNCHER_TYPE: &str = "pgs3 launcher";
 pub(crate) const HTTP_TYPE: &str = "pgs3 http";
 pub(crate) const GC_TYPE: &str = "pgs3 gc";
 
-/// Connect an HTTP worker as the restricted service role.  pgrx 0.19.2's
-/// `connect_worker_to_spi` wrapper always passes flags=0, which would require a
-/// LOGIN role.  PostgreSQL 17/18 expose BGWORKER_BYPASS_ROLELOGINCHECK so the
-/// internal-only service identity can remain NOLOGIN.
+/// Connect an HTTP worker as its NOLOGIN service role. PostgreSQL 17 and newer
+/// accept BGWORKER_BYPASS_ROLELOGINCHECK. The pgrx SPI wrapper passes flags=0.
 pub(crate) fn connect_worker_to_spi_as_service(database: &str, role: &str) -> Result<(), String> {
     let database = CString::new(database).map_err(|_| "database name contains NUL".to_owned())?;
     let role = CString::new(role).map_err(|_| "server role contains NUL".to_owned())?;
@@ -30,18 +28,18 @@ pub(crate) fn connect_worker_to_spi_as_service(database: &str, role: &str) -> Re
     #[cfg(feature = "pg16")]
     {
         let _ = (database, role);
-        return Err("a NOLOGIN pgs3.server_role requires PostgreSQL 17 or newer".to_owned());
+        Err("a NOLOGIN pgs3.server_role requires PostgreSQL 17 or newer".to_owned())
     }
 
-    #[cfg(any(feature = "pg17", feature = "pg18"))]
+    #[cfg(not(feature = "pg16"))]
     unsafe {
         pgrx::pg_sys::BackgroundWorkerInitializeConnection(
             database.as_ptr(),
             role.as_ptr(),
             pgrx::pg_sys::BGWORKER_BYPASS_ROLELOGINCHECK,
         );
+        Ok(())
     }
-    Ok(())
 }
 
 pub(crate) fn reload_configuration() {

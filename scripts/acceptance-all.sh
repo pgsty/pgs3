@@ -57,20 +57,27 @@ run_host_pg_gate() {
 run_gate fmt-check make fmt-check
 run_host_pg_gate check-pg17 check 17
 run_host_pg_gate check-pg18 check 18
+run_host_pg_gate check-pg19 check 19
 run_host_pg_gate clippy-pg17 clippy 17
 run_host_pg_gate clippy-pg18 clippy 18
+run_host_pg_gate clippy-pg19 clippy 19
 run_host_pg_gate lib-unit-pg17 lib-unit 17
 run_host_pg_gate lib-unit-pg18 lib-unit 18
+run_host_pg_gate lib-unit-pg19 lib-unit 19
 run_gate wire-unit make unit
 run_host_pg_gate package-pg17 package 17
 run_host_pg_gate package-pg18 package 18
+run_host_pg_gate package-pg19 package 19
 run_gate sql-pg17 make sql-test PG_MAJOR=17
 run_gate sql-pg18 make sql-test PG_MAJOR=18
+run_gate sql-pg19 make sql-test PG_MAJOR=19
 run_gate upgrade-pg17 make upgrade-test PG_MAJOR=17
 run_gate upgrade-pg18 make upgrade-test PG_MAJOR=18
+run_gate upgrade-pg19 make upgrade-test PG_MAJOR=19
 run_gate integration-lint make integration-lint
 run_gate clients-pg17 tests/integration/run-acceptance.sh --mode clients --pg 17
 run_gate clients-pg18 tests/integration/run-acceptance.sh --mode clients --pg 18
+run_gate clients-pg19 tests/integration/run-acceptance.sh --mode clients --pg 19
 run_gate ceph-pg17 make ceph-test PG_MAJOR=17
 run_gate reliability-pg17 make reliability-test PG_MAJOR=17
 run_gate robustness-pg17 make robustness-test PG_MAJOR=17

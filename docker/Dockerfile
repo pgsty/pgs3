@@ -3,9 +3,12 @@ ARG POSTGRES_IMAGE=postgres:${PG_MAJOR}-bookworm
 
 FROM ${POSTGRES_IMAGE} AS builder
 ARG PG_MAJOR
-ARG PGRX_VERSION=0.19.2
+ARG PGRX_VERSION=0.20.1
+ARG RUST_VERSION=1.100.0
 
-RUN apt-get update \
+# pgrx conditionally binds server symbols introduced in minor releases.
+RUN server_version=$(dpkg-query -W -f='${Version}' "postgresql-${PG_MAJOR}") \
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
@@ -14,13 +17,13 @@ RUN apt-get update \
         libclang-dev \
         libssl-dev \
         pkg-config \
-        postgresql-server-dev-${PG_MAJOR} \
+        "postgresql-server-dev-${PG_MAJOR}=${server_version%%-*}-*" \
     && rm -rf /var/lib/apt/lists/*
 
 ENV PATH=/root/.cargo/bin:${PATH}
 ENV PGRX_HOME=/root/.pgrx
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-        | sh -s -- -y --profile minimal --default-toolchain stable \
+        | sh -s -- -y --profile minimal --default-toolchain "${RUST_VERSION}" \
     && rustup component add rustfmt \
     && cargo install cargo-pgrx --version "${PGRX_VERSION}" --locked \
     && cargo pgrx init \

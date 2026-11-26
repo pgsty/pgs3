@@ -20,7 +20,7 @@ optimize for multi-gigabyte streaming bandwidth or implement all of Amazon S3.
 
 The first-phase contract includes:
 
-- PostgreSQL 17 and 18 support, with 16 best effort;
+- PostgreSQL 17, 18 and 19 support, with 16 best effort
 - SQL-callable semantics for every object and upload operation;
 - an in-postmaster background-worker HTTP pool;
 - SigV4 header and query authentication, including the required streaming modes;
@@ -55,9 +55,9 @@ testable from psql with HTTP stopped.
 ### Extension and process lifecycle
 
 `CREATE EXTENSION pgs3` installs the `pgs3` schema and SQL API in one database.
-The current catalog version is 0.1.1. Packaging includes a versioned
-`pgs3--0.1.0--0.1.1.sql` update path and a frozen, checksummed 0.1.0 install
-fixture used only by the disposable upgrade harness. `pgs3.extension_version()`
+The current catalog version is 0.1.2. Packages include both update scripts
+for the 0.1.0 → 0.1.1 → 0.1.2 path. The upgrade harness starts from a frozen,
+checksummed 0.1.0 install fixture. `pgs3.extension_version()`
 reports `pg_extension.extversion`, so it reflects the catalog state even when a
 new shared library has been staged before `ALTER EXTENSION`.
 There are two target startup modes:
@@ -325,7 +325,7 @@ The design is complete only when current artifacts prove all of the following:
   reason for every failure or skip and core in-scope APIs passing;
 - concurrency, dedup/GC, crash, fork, tenant, fuzz, standby, shutdown, and SIGHUP
   acceptance tests pass at their specified repetition/scale;
-- packages build for PostgreSQL 17 and 18;
+- packages build for PostgreSQL 17, 18 and 19
 - the complete benchmark matrix in perf.md contains measured p50/throughput/list/
   fork results and same-host MinIO comparisons, and every fixed threshold passes.
 

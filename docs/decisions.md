@@ -76,7 +76,7 @@ the `pgs3` extension. Workers connect to that database and use its `pgs3` schema
 Serving several databases through one listen socket is explicitly out of scope.
 Several endpoints may be configured on distinct address/port pairs.
 
-Supported release targets are PostgreSQL 17 and 18; PostgreSQL 16 is best effort.
+Supported release targets are PostgreSQL 17, 18 and 19. PostgreSQL 16 is best effort.
 The build and package matrix must not describe 16 as supported until it passes.
 
 ## D003 — how a preload launcher finds its database

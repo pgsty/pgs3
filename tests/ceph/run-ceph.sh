@@ -16,7 +16,7 @@ ceph_image=${PGS3_CEPH_IMAGE:-pgs3-ceph-s3tests:${ceph_commit:0:12}}
 
 usage() {
     printf '%s\n' \
-        'usage: run-ceph.sh [--pg 17|18] [--skip-server-build]' \
+        'usage: run-ceph.sh [--pg 17|18|19] [--skip-server-build]' \
         '                   [--skip-ceph-build] [--run-id ID]' \
         '' \
         'Runs the explicit Phase 1 Ceph s3-tests selection.  A PASS requires' \
@@ -55,7 +55,7 @@ while (($#)); do
 done
 
 case ${pg_major} in
-    17|18) ;;
+    17|18|19) ;;
     *) printf 'unsupported PostgreSQL major: %s\n' "${pg_major}" >&2; exit 2 ;;
 esac
 case ${skip_server_build}:${skip_ceph_build} in

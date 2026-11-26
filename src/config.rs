@@ -126,7 +126,7 @@ pub(crate) fn statement_timeout_ms() -> i32 {
 
 pub(crate) fn inline_threshold_bytes() -> usize {
     // The registered GUC range is 0..=1 GiB and therefore fits usize on every
-    // PostgreSQL 17/18 platform supported by pgrx.
+    // PostgreSQL platform supported by pgrx.
     INLINE_THRESHOLD.get().max(0) as usize
 }
 

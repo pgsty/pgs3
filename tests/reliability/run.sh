@@ -17,7 +17,7 @@ requested_run_id=''
 
 usage() {
     cat <<'USAGE'
-usage: run.sh [--scenario crash|fast-stop|reload|standby|all] [--pg 17|18]
+usage: run.sh [--scenario crash|fast-stop|reload|standby|all] [--pg 17|18|19]
               [--skip-build] [--static-only] [--run-id ID]
 
 Every invocation writes a redacted manifest under artifacts/acceptance/.  A
@@ -66,7 +66,7 @@ case ${scenario} in
     *) printf 'unsupported reliability scenario: %s\n' "${scenario}" >&2; exit 2 ;;
 esac
 case ${pg_major} in
-    17|18) ;;
+    17|18|19) ;;
     *) printf 'unsupported PostgreSQL major: %s\n' "${pg_major}" >&2; exit 2 ;;
 esac
 case ${skip_build}:${static_only} in

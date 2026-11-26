@@ -1,0 +1,1 @@
+-- 0.1.2 uses the same SQL objects as 0.1.1. PostgreSQL updates extversion.

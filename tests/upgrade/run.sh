@@ -11,7 +11,8 @@ skip_build=${PGS3_SKIP_BUILD:-0}
 docker_buildkit=${DOCKER_BUILDKIT:-0}
 static_only=0
 old_version=0.1.0
-new_version=0.1.1
+previous_version=0.1.1
+new_version=0.1.2
 fixture_sha=b4123f4c877cd18879a27073df4301660b5539433d21dc37dce1f72b764c534a
 container="pgs3-upgrade-pg${pg_major}-$$"
 upgrade_db=pgs3_upgrade_path
@@ -41,7 +42,7 @@ while (($#)); do
 done
 
 case ${pg_major} in
-    17|18) ;;
+    17|18|19) ;;
     *) printf 'unsupported PostgreSQL major: %s\n' "${pg_major}" >&2; exit 2 ;;
 esac
 case ${skip_build} in
@@ -53,10 +54,10 @@ upgrade_wait_postgres() {
     local _
     for _ in $(seq 1 60); do
         if docker exec "${container}" \
-            pg_isready --username postgres --dbname postgres >/dev/null 2>&1
+            pg_isready --host=127.0.0.1 --username postgres --dbname postgres >/dev/null 2>&1
         then
             docker exec "${container}" \
-                pg_isready --username postgres --dbname postgres
+                pg_isready --host=127.0.0.1 --username postgres --dbname postgres
             return 0
         fi
         sleep 1
@@ -67,14 +68,11 @@ upgrade_wait_postgres() {
 
 upgrade_check_package() {
     docker exec "${container}" bash -ceu '
-        extension_dir=$(pg_config --sharedir)/extension
-        test -f "${extension_dir}/pgs3--0.1.1.sql"
-        test -f "${extension_dir}/pgs3--0.1.0--0.1.1.sql"
-        test ! -e "${extension_dir}/pgs3--0.1.0.sql"
-        grep -Fx "default_version = '\''0.1.1'\''" "${extension_dir}/pgs3.control"
-        sha256sum "${extension_dir}/pgs3--0.1.1.sql" \
-            "${extension_dir}/pgs3--0.1.0--0.1.1.sql"
-    '
+        cd "$(pg_config --sharedir)/extension"
+        test ! -e "pgs3--$1.sql"
+        grep -Fx "default_version = '\''$3'\''" pgs3.control
+        sha256sum "pgs3--$3.sql" "pgs3--$1--$2.sql" "pgs3--$2--$3.sql"
+    ' bash "${old_version}" "${previous_version}" "${new_version}"
 }
 
 upgrade_copy_baseline() {
@@ -231,8 +229,10 @@ evidence_run upgrade-install-old upgrade_psql "${upgrade_db}" \
     --command "CREATE EXTENSION pgs3 VERSION '${old_version}'"
 evidence_run upgrade-prepare-rich-fixture upgrade_psql_file \
     "${upgrade_db}" "${repo_dir}/tests/upgrade/prepare.sql"
+evidence_run upgrade-to-previous-release upgrade_psql "${upgrade_db}" \
+    --command "ALTER EXTENSION pgs3 UPDATE TO '${previous_version}'"
 evidence_run upgrade-alter-extension upgrade_psql "${upgrade_db}" \
-    --command "ALTER EXTENSION pgs3 UPDATE TO '${new_version}'"
+    --command "ALTER EXTENSION pgs3 UPDATE"
 evidence_run upgrade-verify-rich-fixture upgrade_psql_file \
     "${upgrade_db}" "${repo_dir}/tests/upgrade/verify.sql"
 

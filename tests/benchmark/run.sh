@@ -25,7 +25,7 @@ smoke_concurrency=${PGS3_BENCH_SMOKE_CONCURRENCY:-2}
 
 usage() {
     cat <<'USAGE'
-usage: tests/benchmark/run.sh [--profile acceptance|smoke] [--pg 17|18]
+usage: tests/benchmark/run.sh [--profile acceptance|smoke] [--pg 17|18|19]
                               [--skip-build] [--static-only] [--run-id ID]
                               [--environment-note TEXT]
 
@@ -84,7 +84,7 @@ while (($#)); do
 done
 
 case ${pg_major} in
-    17|18) ;;
+    17|18|19) ;;
     *) printf 'unsupported PostgreSQL major: %s\n' "${pg_major}" >&2; exit 2 ;;
 esac
 case ${profile} in

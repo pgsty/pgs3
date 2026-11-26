@@ -61,15 +61,16 @@ impl Digests {
         }
     }
 
-    fn update(&mut self, bytes: &[u8]) {
-        let amount = i64::try_from(bytes.len())
-            .unwrap_or_else(|_| corrupt("one hash input block exceeds bigint"));
+    fn update(&mut self, bytes: &[u8]) -> Result<(), &'static str> {
+        let amount =
+            i64::try_from(bytes.len()).map_err(|_| "one hash input block exceeds bigint")?;
         self.total_size = self
             .total_size
             .checked_add(amount)
-            .unwrap_or_else(|| corrupt("canonical blob size overflows bigint"));
+            .ok_or("canonical blob size overflows bigint")?;
         self.sha256.update(bytes);
         self.md5.update(bytes);
+        Ok(())
     }
 
     fn finish(self) -> (Vec<u8>, String, i64) {
@@ -651,7 +652,11 @@ mod pgs3 {
             let seq = i32::try_from(seq64)
                 .unwrap_or_else(|_| corrupt("upload chunk sequence exceeds integer"));
             let (blob_id, recorded_size) = load_upload_chunk(upload_id, part_number, seq);
-            let actual_size = stream_verified_blob(&blob_id, &mut |bytes| digests.update(bytes));
+            let actual_size = stream_verified_blob(&blob_id, &mut |bytes| {
+                digests
+                    .update(bytes)
+                    .unwrap_or_else(|message| corrupt(message));
+            });
             if actual_size != recorded_size {
                 corrupt("an upload chunk size does not match its canonical blob");
             }
@@ -701,8 +706,8 @@ mod tests {
     #[test]
     fn incremental_digests_match_known_vectors() {
         let mut digests = Digests::new();
-        digests.update(b"a");
-        digests.update(b"bc");
+        digests.update(b"a").unwrap();
+        digests.update(b"bc").unwrap();
         let (sha256, md5, size) = digests.finish();
         assert_eq!(
             lower_hex(&sha256),

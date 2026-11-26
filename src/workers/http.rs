@@ -1412,6 +1412,9 @@ fn wait_for_events<S>(listener: &TcpListener, connections: &[Connection<S>]) -> 
             pg_sys::ResetLatch(pg_sys::MyLatch);
             let capacity = i32::try_from(connections.len().saturating_add(3))
                 .expect("connection limit fits WaitEventSet capacity");
+            #[cfg(feature = "pg16")]
+            let set = pg_sys::CreateWaitEventSet(pg_sys::CurrentMemoryContext, capacity);
+            #[cfg(not(feature = "pg16"))]
             let set = pg_sys::CreateWaitEventSet(pg_sys::CurrentResourceOwner, capacity);
             let _guard = WaitSetGuard(set);
             pg_sys::AddWaitEventToSet(

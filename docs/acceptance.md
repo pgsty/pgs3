@@ -10,10 +10,29 @@ kept with the release record.
 
 Status values are `PASS`, `FAIL`, `BLOCKED`, and `NOT RUN`. `PASS` means the
 manifest's recorded tree was exercised at the scale stated by the specification;
-it is not automatically fresh for later source changes. The manifests below cover
-the current extension images.
+it is not automatically fresh for later source changes.
 
-## Release matrix
+## PostgreSQL 19 and pgrx 0.20.1 (2026-11-26)
+
+The 0.1.2 release adds an upgrade check on PostgreSQL 17, 18 and 19.
+`make upgrade-test-matrix` updates a populated 0.1.1 database to 0.1.2,
+checks that PostgreSQL can chain both scripts from 0.1.0, and compares the
+upgraded catalog and SQL behavior with a fresh 0.1.2 installation.
+
+On Linux arm64, PostgreSQL 17.12, 18.7 and 19.0 passed the packaged SQL,
+HTTP and client suites in the PG19 compatibility run. This run also exercised
+the `0.1.0` to `0.1.1` extension upgrade. The
+PG19 runs cover 20 rounds of 50 concurrent conditional writes, a catalog
+comparison with a fresh install, and AWS CLI multipart uploads, rclone, boto3,
+DuckDB and a real s3fs mount. See the [SQL](../artifacts/acceptance/20261126T093539Z-sql-semantic-pg19-25171/manifest.json),
+[upgrade](../artifacts/acceptance/20261126T093559Z-extension-upgrade-pg19-26477/manifest.json)
+and [client](../artifacts/acceptance/20261126T093442Z-clients-pg19-20771/manifest.json) manifests.
+PG19 also passed all 195 selected Ceph S3 cases and recovered from a worker
+statement timeout after a configuration reload. See the
+[Ceph](../artifacts/acceptance/20261126T094417Z-ceph-s3-tests-pg19-20126/manifest.json)
+and [reload](../artifacts/acceptance/20261126T094048Z-reliability-reload-pg19-55050/manifest.json) manifests.
+
+## Release matrix (2026-08-31)
 
 | # | Gate | Reproducible entry point | Current status | Current evidence |
 | ---: | --- | --- | --- | --- |
@@ -95,8 +114,8 @@ D024, automatic non-SHA multipart selection is accepted for required-client
 compatibility and supplied part checksums are verified, but a final non-SHA
 composite is not yet validated or stored.
 
-All manifests name an exact dirty-worktree SHA-256 and image identity. The current
-extension source—including D025--D029, keep-alive, sealed staged PUT, the 4 MiB
+All manifests name an exact dirty-worktree SHA-256 and image identity. The
+2026-08-31 extension source—including D025--D029, keep-alive, sealed staged PUT, the 4 MiB
 default, the real upgrade path, GET/ListParts, dynamic stop, and fuzz hardening—is
 packaged in PG17 image `270f9b60...` and PG18 image `0bc9f5a9...`.
 SQL/client/upgrade/Ceph/reliability/robustness/fuzz/scale/benchmark runs above

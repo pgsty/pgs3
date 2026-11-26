@@ -1,6 +1,6 @@
 # pgs3 快速上手
 
-本教程用一个本地 Docker 容器启动 PostgreSQL 17、安装 `pgs3 0.1.1`，
+本教程用一个本地 Docker 容器启动 PostgreSQL 17、安装 `pgs3 0.1.2`，
 创建租户和 S3 凭据，然后通过 AWS CLI 完成建桶、上传、下载、覆盖与版本读取。
 完成全流程通常只需要十几分钟。
 
@@ -26,7 +26,8 @@ make image PG_MAJOR=17
 ```
 
 生成的镜像名为 `pgs3-test:pg17`。第一次构建需要下载 PostgreSQL、Rust、
-`cargo-pgrx 0.19.2` 及编译依赖，耗时取决于网络和机器性能。
+`cargo-pgrx 0.20.1` 及编译依赖。要在 PostgreSQL 19 上运行本教程，构建时使用
+`PG_MAJOR=19`，启动容器时使用镜像 `pgs3-test:pg19`。
 
 ## 2. 启动 PostgreSQL
 
@@ -49,7 +50,7 @@ docker run --detach \
 
 ```bash
 until docker exec pgs3-demo \
-  pg_isready --username postgres --dbname postgres >/dev/null 2>&1
+  pg_isready --host=127.0.0.1 --username postgres --dbname postgres >/dev/null 2>&1
 do
   sleep 1
 done

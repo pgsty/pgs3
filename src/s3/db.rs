@@ -4,6 +4,7 @@ use std::panic::{RefUnwindSafe, UnwindSafe};
 
 use pgrx::bgworkers::BackgroundWorker;
 use pgrx::datum::DatumWithOid;
+use pgrx::pg_sys::TimeoutId::STATEMENT_TIMEOUT;
 use pgrx::pg_sys::panic::CaughtError;
 use pgrx::prelude::*;
 
@@ -28,17 +29,6 @@ const TENANT_REQUEST_CONTEXT_SQL: &str = "SELECT pg_catalog.set_config( \
             pg_catalog.current_setting('pgs3.statement_timeout_ms'), \
             true \
         ), pg_catalog.set_config('role', $1, true)";
-
-// utils/timeout.h has kept STATEMENT_TIMEOUT at enum value 3 across supported
-// PostgreSQL 17 and 18. pgrx does not currently expose the timeout API, so keep
-// this narrow FFI boundary beside the only caller. These functions are invoked
-// only by a connected background worker on its PostgreSQL main thread.
-const STATEMENT_TIMEOUT_ID: std::ffi::c_int = 3;
-
-unsafe extern "C" {
-    fn enable_timeout_after(id: std::ffi::c_int, delay_ms: std::ffi::c_int);
-    fn disable_timeout(id: std::ffi::c_int, keep_indicator: bool);
-}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) struct Credential {
@@ -417,19 +407,19 @@ impl PgDatabase {
             // statement timer. Arm the registered core handler only after the
             // PgTryBuilder error boundary exists, and disarm it before leaving.
             unsafe {
-                disable_timeout(STATEMENT_TIMEOUT_ID, false);
-                enable_timeout_after(STATEMENT_TIMEOUT_ID, timeout_ms);
+                pg_sys::disable_timeout(STATEMENT_TIMEOUT, false);
+                pg_sys::enable_timeout_after(STATEMENT_TIMEOUT, timeout_ms);
             }
             let result = BackgroundWorker::transaction(body);
             unsafe {
-                disable_timeout(STATEMENT_TIMEOUT_ID, false);
+                pg_sys::disable_timeout(STATEMENT_TIMEOUT, false);
             }
             result
         })
         .catch_others(|cause| {
             // A timeout ERROR longjmps past the normal disarm point.
             unsafe {
-                disable_timeout(STATEMENT_TIMEOUT_ID, false);
+                pg_sys::disable_timeout(STATEMENT_TIMEOUT, false);
             }
             let (message, sqlstate, detail) = caught_error(&cause);
             // A PostgreSQL ERROR bypasses BackgroundWorker::transaction's

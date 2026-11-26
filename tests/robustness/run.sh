@@ -14,7 +14,7 @@ robust_workers=${PGS3_ROBUST_WORKERS:-3}
 
 usage() {
     cat <<'USAGE'
-usage: run.sh [--pg 17|18] [--static-only] [--run-id ID]
+usage: run.sh [--pg 17|18|19] [--static-only] [--run-id ID]
               [--workers N]
 
 The runtime gate creates exactly one disposable pgs3 container on a dedicated,
@@ -63,7 +63,7 @@ while (($#)); do
 done
 
 case ${pg_major} in
-    17|18) ;;
+    17|18|19) ;;
     *) printf 'unsupported PostgreSQL major: %s\n' "${pg_major}" >&2; exit 2 ;;
 esac
 [[ ${static_only} == 0 || ${static_only} == 1 ]]

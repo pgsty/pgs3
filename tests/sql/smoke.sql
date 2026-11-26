@@ -10,8 +10,8 @@ BEGIN
     ASSERT EXISTS (
         SELECT 1 FROM pg_extension WHERE extname = 'pgs3'
     ), 'pgs3 extension is not installed';
-    ASSERT pgs3.extension_version() = '0.1.1',
-           'pgs3 extension catalog version is not 0.1.1';
+    ASSERT pgs3.extension_version() = '0.1.2',
+           'expected pgs3 extension catalog version 0.1.2';
     ASSERT to_regnamespace('pgs3') IS NOT NULL;
 
     ASSERT to_regclass('pgs3.bucket') IS NOT NULL;

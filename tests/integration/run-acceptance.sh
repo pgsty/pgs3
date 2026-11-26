@@ -14,7 +14,7 @@ requested_run_id=''
 
 usage() {
     cat <<'USAGE'
-usage: run-acceptance.sh [--mode http-smoke|clients] [--pg 17|18]
+usage: run-acceptance.sh [--mode http-smoke|clients] [--pg 17|18|19]
                          [--skip-build] [--mandatory|--allow-blocked]
                          [--run-id ID]
 
@@ -68,7 +68,7 @@ case ${mode} in
     *) printf 'unsupported acceptance mode: %s\n' "${mode}" >&2; exit 2 ;;
 esac
 case ${pg_major} in
-    17|18) ;;
+    17|18|19) ;;
     *) printf 'unsupported PostgreSQL major: %s\n' "${pg_major}" >&2; exit 2 ;;
 esac
 case ${skip_build}:${mandatory} in

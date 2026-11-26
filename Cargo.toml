@@ -1,7 +1,8 @@
 [package]
 name = "pgs3"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
+rust-version = "1.99.1"
 resolver = "3"
 description = "S3-compatible object storage implemented as a PostgreSQL extension"
 license = "Apache-2.0"
@@ -18,6 +19,7 @@ default = ["pg17"]
 pg16 = ["pgrx/pg16", "pgrx-tests/pg16"]
 pg17 = ["pgrx/pg17", "pgrx-tests/pg17"]
 pg18 = ["pgrx/pg18", "pgrx-tests/pg18"]
+pg19 = ["pgrx/pg19", "pgrx-tests/pg19"]
 pg_test = []
 
 [dependencies]
@@ -27,13 +29,13 @@ crc32fast = "=1.5.0"
 hmac = "=0.12.1"
 httpdate = "=1.0.3"
 md-5 = "=0.10.6"
-pgrx = "=0.19.2"
+pgrx = "=0.20.1"
 quick-xml = "=0.38.3"
 sha1 = "=0.10.6"
 sha2 = { version = "=0.10.9", features = ["asm"] }
 
 [dev-dependencies]
-pgrx-tests = "=0.19.2"
+pgrx-tests = "=0.20.1"
 
 [profile.dev]
 panic = "unwind"

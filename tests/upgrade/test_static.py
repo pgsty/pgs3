@@ -53,13 +53,14 @@ class UpgradeContractTests(unittest.TestCase):
 
     def test_release_versions_have_one_source_of_truth(self) -> None:
         cargo = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
-        self.assertEqual(cargo["package"]["version"], "0.1.1")
+        version = cargo["package"]["version"]
         self.assertIn("default_version = '@CARGO_VERSION@'", (ROOT / "pgs3.control").read_text())
-        lock = (ROOT / "Cargo.lock").read_text(encoding="utf-8")
-        self.assertRegex(
-            lock,
-            r'(?ms)^\[\[package\]\]\nname = "pgs3"\nversion = "0\.1\.1"$',
+        lock = tomllib.loads((ROOT / "Cargo.lock").read_text(encoding="utf-8"))
+        self.assertEqual(
+            [package["version"] for package in lock["package"] if package["name"] == "pgs3"],
+            [version],
         )
+        self.assertTrue((ROOT / "sql" / f"pgs3--0.1.1--{version}.sql").is_file())
 
     def test_frozen_baseline_is_the_reviewed_0_1_0_package(self) -> None:
         self.assertEqual(

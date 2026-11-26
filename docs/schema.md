@@ -5,8 +5,8 @@
 This document describes the current SQL schema in `sql/bootstrap.sql` and names
 the remaining runtime/streaming gaps separately. The installed catalog is the
 authority for a particular extension build. The current direct-install catalog
-is 0.1.1, with a versioned 0.1.0-to-0.1.1 update script. The storage semantics
-described here
+is 0.1.2. PostgreSQL can upgrade from 0.1.0 through 0.1.1 using the two
+packaged update scripts. The storage semantics described here
 were exercised by `tests/sql/semantic.sql` against live PostgreSQL 17 and 18 on
 2026-08-31; packaged-extension and HTTP evidence remain separate gates.
 
@@ -370,10 +370,10 @@ NOTIFY contract.
 
 ## Migration rules
 
-- Version 0.1.1 ships `pgs3--0.1.0--0.1.1.sql` and
-  `pgs3.extension_version()`. The update path is compared with a direct 0.1.1
-  install using a frozen, checksummed 0.1.0 fixture; the fixture is test input,
-  not a current-package fresh-install version.
+- The 0.1.0-to-0.1.1 migration adds `pgs3.extension_version()`. The 0.1.2
+  update advances the catalog version and preserves all existing SQL objects.
+  The upgrade harness compares a database upgraded from the frozen 0.1.0
+  fixture with a fresh 0.1.2 installation.
 - Use versioned extension update scripts; never edit an installed catalog by hand.
 - Add constraints as `NOT VALID`, validate after a consistency audit, then make
   writers rely on them.

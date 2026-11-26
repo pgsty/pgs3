@@ -108,7 +108,7 @@ robust_wait_postgres() {
     local last=''
     printf 'waiting for PostgreSQL in disposable container %s\n' "${ROBUST_CONTAINER}"
     for _ in $(seq 1 120); do
-        if docker exec "${ROBUST_CONTAINER}" pg_isready \
+        if docker exec "${ROBUST_CONTAINER}" pg_isready --host=127.0.0.1 \
             --username postgres --dbname postgres >/dev/null 2>&1; then
             docker exec "${ROBUST_CONTAINER}" psql \
                 --username postgres --dbname postgres --no-psqlrc \

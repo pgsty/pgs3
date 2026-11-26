@@ -123,7 +123,7 @@ bench_start_minio() {
 bench_wait_postgres() {
     local attempt
     for attempt in $(seq 1 120); do
-        if docker exec "${BENCH_PGS3_CONTAINER}" pg_isready \
+        if docker exec "${BENCH_PGS3_CONTAINER}" pg_isready --host=127.0.0.1 \
             --username postgres --dbname postgres >/dev/null 2>&1; then
             docker exec "${BENCH_PGS3_CONTAINER}" psql \
                 --username postgres --dbname postgres --no-psqlrc \

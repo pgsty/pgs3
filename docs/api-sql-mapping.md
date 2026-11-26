@@ -353,16 +353,16 @@ atomic SQL mutation. See D026.
 
 ## Extension version transition
 
-The current direct install version is 0.1.1. The shipped
+The current direct install version is 0.1.2. The shipped
 `pgs3--0.1.0--0.1.1.sql` update adds the catalog-version probe and worker-sealed
 bridge, updates the affected semantic/helper definitions, replays credential
 SET-only membership grants, and grants the configured custom service role its
-narrow runtime ACL. `tests/upgrade/run.sh` temporarily installs a frozen,
+narrow runtime ACL. The 0.1.1-to-0.1.2 update preserves those definitions.
+`tests/upgrade/run.sh` temporarily installs a frozen,
 checksummed 0.1.0 fixture in a disposable package image, builds inline/chunked/
 multipart/copy/fork/restore/delete-marker/pending/cross-tenant data, executes
-`ALTER EXTENSION ... UPDATE TO '0.1.1'`, and compares its catalog and semantics
-with a direct 0.1.1 install. The harness is the required gate; its presence alone
-is not a recorded PG17/PG18 PASS.
+both version transitions, and compares its catalog and semantics with a direct
+0.1.2 install.
 
 ## Completion evidence for this mapping
 

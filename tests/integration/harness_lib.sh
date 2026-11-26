@@ -43,9 +43,10 @@ PY
 }
 
 harness_wait_postgres() {
+    # The Docker image's temporary initialization server accepts only Unix sockets.
     printf '+ wait for PostgreSQL readiness in %s\n' "${harness_container}"
     for _ in $(seq 1 120); do
-        if docker exec "${harness_container}" pg_isready \
+        if docker exec "${harness_container}" pg_isready --host=127.0.0.1 \
             --username postgres --dbname postgres >/dev/null 2>&1; then
             docker exec "${harness_container}" psql --username postgres --dbname postgres \
                 --no-psqlrc --tuples-only --no-align --command \
@@ -89,7 +90,13 @@ harness_wait_workers() {
     for _ in $(seq 1 60); do
         ready=$(docker exec "${harness_container}" psql \
             --username postgres --dbname postgres --no-psqlrc --tuples-only --no-align \
-            --command "SELECT count(*) FROM pgs3.worker_state WHERE desired AND status = 'running' AND worker_kind = 'http'" \
+            --command "SELECT count(*)
+                FROM pgs3.worker_state AS w
+                JOIN pg_catalog.pg_stat_activity AS a USING (pid)
+                JOIN pg_catalog.pg_roles AS r ON r.oid = a.usesysid
+                WHERE w.desired AND w.status = 'running' AND w.worker_kind = 'http'
+                  AND a.backend_type = 'pgs3 http'
+                  AND r.rolname = current_setting('pgs3.server_role') AND NOT r.rolcanlogin" \
             2>/dev/null | tr -d '[:space:]')
         if [[ ${ready:-0} -ge 2 ]]; then
             docker exec "${harness_container}" psql \
@@ -396,16 +403,15 @@ harness_fuse_preflight() {
             return 2
             ;;
     esac
-    if [[ -c /dev/fuse ]]; then
-        harness_fuse_mode=device
-        docker run --rm \
+    if docker run --rm \
             --device /dev/fuse \
             --cap-add SYS_ADMIN \
             --security-opt apparmor=unconfined \
             "${harness_client_image}" \
             bash -Eeuo pipefail -c \
-                'test -c /dev/fuse && test -r /dev/fuse && test -w /dev/fuse'
-        return
+                'test -c /dev/fuse && test -r /dev/fuse && test -w /dev/fuse'; then
+        harness_fuse_mode=device
+        return 0
     fi
     if ((harness_allow_privileged_fuse == 0)); then
         printf '%s\n' \

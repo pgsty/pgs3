@@ -3,11 +3,11 @@
 DO $version$
 BEGIN
     ASSERT (
-        SELECT extversion = '0.1.1'
+        SELECT extversion = '0.1.2'
           FROM pg_catalog.pg_extension
          WHERE extname = 'pgs3'
-    ), 'ALTER EXTENSION did not reach pgs3 0.1.1';
-    ASSERT pgs3.extension_version() = '0.1.1';
+    ), 'ALTER EXTENSION did not reach pgs3 0.1.2';
+    ASSERT pgs3.extension_version() = '0.1.2';
     ASSERT (
         SELECT c.reloptions @> ARRAY['fillfactor=80']::text[]
           FROM pg_catalog.pg_class AS c
@@ -131,4 +131,4 @@ SELECT pgs3._worker_set_actor('pgs3_upgrade_tenant_a');
 ROLLBACK;
 RESET SESSION AUTHORIZATION;
 
-SELECT 'pgs3 0.1.0 to 0.1.1 upgrade: ok' AS result;
+SELECT 'pgs3 0.1.0 through 0.1.1 to 0.1.2 upgrade: ok' AS result;

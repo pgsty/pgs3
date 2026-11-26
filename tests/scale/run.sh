@@ -28,7 +28,7 @@ SCALE_GATE_FAILURES=0
 
 usage() {
     cat <<'USAGE'
-usage: tests/scale/run.sh [--pg 17|18] [--skip-build] [--static-only]
+usage: tests/scale/run.sh [--pg 17|18|19] [--skip-build] [--static-only]
                           [--run-id ID]
 
 One disposable PostgreSQL container loads and measures acceptance 7, 15, and
@@ -81,7 +81,7 @@ while (($#)); do
 done
 
 case ${pg_major} in
-    17|18) ;;
+    17|18|19) ;;
     *) printf 'unsupported PostgreSQL major: %s\n' "${pg_major}" >&2; exit 2 ;;
 esac
 case ${skip_build}:${static_only} in
@@ -292,7 +292,7 @@ scale_start_container() {
 scale_wait_postgres() {
     local _
     for _ in $(seq 1 120); do
-        if docker exec "${SCALE_CONTAINER}" pg_isready \
+        if docker exec "${SCALE_CONTAINER}" pg_isready --host=127.0.0.1 \
             --username postgres --dbname postgres >/dev/null 2>&1; then
             docker exec "${SCALE_CONTAINER}" psql \
                 --username postgres --dbname postgres --no-psqlrc \

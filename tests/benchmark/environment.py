@@ -319,7 +319,7 @@ def parser() -> argparse.ArgumentParser:
     root = argparse.ArgumentParser()
     root.add_argument("--output", required=True)
     root.add_argument("--profile", choices=("acceptance", "smoke"), required=True)
-    root.add_argument("--pg-major", type=int, choices=(17, 18), required=True)
+    root.add_argument("--pg-major", type=int, choices=(17, 18, 19), required=True)
     root.add_argument("--pgs3-image", required=True)
     root.add_argument("--minio-image", required=True)
     root.add_argument("--client-image", required=True)

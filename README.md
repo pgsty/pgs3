@@ -1,7 +1,7 @@
 # pgs3
 
 [![Release](https://img.shields.io/github/v/release/pgsty/pgs3?display_name=tag&sort=semver)](https://github.com/pgsty/pgs3/releases/latest)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17%20%7C%2018-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17%20%7C%2018%20%7C%2019-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 **S3-compatible object storage implemented inside PostgreSQL.**
@@ -18,9 +18,10 @@ and recovery remain inside PostgreSQL.
 > not meet the project gates. Read [Known limitations](docs/known-limitations.md)
 > before deployment.
 
-The current GitHub project release is [`v0.1.1`](https://github.com/pgsty/pgs3/releases/tag/v0.1.1).
-It contains extension catalog version `0.1.1`, preserving the tested
-`0.1.0 -> 0.1.1` PostgreSQL extension upgrade path.
+The [v0.1.2 release](https://github.com/pgsty/pgs3/releases/tag/v0.1.2) supports
+PostgreSQL 19 with pgrx 0.20.1. After installing the new package and restarting
+PostgreSQL to load the new library, run `ALTER EXTENSION pgs3 UPDATE;` in each
+database that uses pgs3. Both 0.1.0 and 0.1.1 can upgrade to 0.1.2.
 
 ## Why pgs3?
 
@@ -51,7 +52,7 @@ to a few MiB when PostgreSQL is already the system of record.
 | Multipart | Create, upload/list parts, complete, abort, multipart ETag, and SHA-256 composite checksum |
 | pgs3 extensions | SQL restore of a historical version and metadata-only bucket Fork |
 | Tenancy | PostgreSQL role mapping, restricted worker role, grants, and default-deny RLS |
-| PostgreSQL | 17 and 18 supported; 16 is best effort |
+| PostgreSQL | 17, 18 and 19 supported (16 is best effort) |
 
 Deliberate first-phase exclusions include virtual-host bucket URLs, built-in TLS,
 IAM or bucket-policy languages, ACLs, lifecycle rules, logical-replication
@@ -120,25 +121,32 @@ allow a client to fall back silently to AWS when `PGS3_ENDPOINT` is missing.
 
 ## Build and install
 
-The source release requires:
+To build from source, install the following tools.
 
-- Rust with the 2024 edition;
-- `cargo-pgrx 0.19.2`;
-- PostgreSQL 17 or 18 server development files;
+- Rust 1.99.1 or newer (the Docker build uses 1.100.0)
+- `cargo-pgrx 0.20.1` (`cargo install cargo-pgrx --version 0.20.1 --locked`)
+- PostgreSQL 17, 18 or 19 server development files for the target major
 - Docker for the pinned package and integration-test path.
 
 Common targets:
 
 ```bash
 make fmt-check
-make check PG_MAJOR=17
-make package PG_MAJOR=17
+make check PG_MAJOR=19
+make package PG_MAJOR=19
 make image-matrix
 ```
 
-The host checks require a matching `pg_config`. Container builds are the
-portable path when both PostgreSQL development versions are not installed on the
-host.
+Host builds use the matching `pg_config`. Set `PG_CONFIG_19` to its full path
+for a custom PostgreSQL 19 installation, or run `make image PG_MAJOR=19` to
+build in Docker. The default target is PostgreSQL 17.
+
+Use development headers from the target server's minor release. A binary built
+with the PostgreSQL 17.12 or 18.7 headers requires at least that minor release
+on its respective branch. The Docker build matches the headers to its runtime
+image. If APT no longer carries the headers for a cached base image, refresh
+the image first (for example, `docker pull postgres:17-bookworm`). See the
+[pgrx compatibility notes](https://github.com/pgcentralfoundation/pgrx/releases/tag/v0.20.0).
 
 After installing the package, preload the library and configure its endpoint:
 
@@ -174,19 +182,17 @@ role; RLS is the final data-isolation boundary.
 
 ## Validation status
 
-The reviewed package-backed baseline records:
-
 | Gate | Result |
 | --- | --- |
-| PostgreSQL 17 and 18 SQL semantics and package runtime | Pass |
-| PostgreSQL 17 and 18 client matrices | Pass |
-| Selected Ceph S3 compatibility suite | 195/195 pass |
-| Real `0.1.0 -> 0.1.1` upgrade on PostgreSQL 17 and 18 | Pass |
-| Crash recovery, fast stop, SIGHUP, and standby reads | Pass |
-| Fixed malformed-request and deterministic fuzz suites | Pass |
-| 8 MiB PUT throughput and LIST targets | Pass |
-| Small-object GET/PUT targets | Fail |
-| 100,000-object Fork under one second | Fail |
+| Packaged SQL semantics and HTTP on PostgreSQL 17.12, 18.7 and 19.0 | Pass |
+| AWS CLI, rclone, boto3, DuckDB and s3fs on all three versions | Pass |
+| Extension upgrades from `0.1.0` and `0.1.1` to `0.1.2` on all three versions | Pass |
+| Selected Ceph S3 compatibility suite on PG17 and PG19 | 195/195 pass on each |
+| Crash recovery, fast stop, SIGHUP, and standby reads on PG17 | Pass |
+| Fixed malformed-request and deterministic fuzz suites on PG17 | Pass |
+| 8 MiB PUT throughput and LIST targets on PG17 | Pass |
+| Small-object GET/PUT targets on PG17 | Fail |
+| 100,000-object Fork under one second on PG17 | Fail |
 
 See [Acceptance evidence](docs/acceptance.md) and
 [Performance results](docs/perf.md) for exact scope and measurements. Test runs
